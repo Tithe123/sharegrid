@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
     View,
     Text,
@@ -6,12 +6,108 @@ import {
     TouchableOpacity,
     TextInput,
     Image,
+    Animated,
+    Easing
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 
 export default function Login({ navigation }) {
     const [secureText, setSecureText] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const dotAnimation1 = useRef(new Animated.Value(0)).current;
+    const dotAnimation2 = useRef(new Animated.Value(0)).current;
+    const dotAnimation3 = useRef(new Animated.Value(0)).current;
+
+    const handleLogin = () => {
+        setIsLoading(true);
+
+
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(dotAnimation1, {
+                    toValue: 1,
+                    duration: 400,
+                    easing: Easing.ease,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(dotAnimation2, {
+                    toValue: 1,
+                    duration: 400,
+                    easing: Easing.ease,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(dotAnimation3, {
+                    toValue: 1,
+                    duration: 400,
+                    easing: Easing.ease,
+                    useNativeDriver: true,
+                }),
+                Animated.delay(200),
+                Animated.parallel([
+                    Animated.timing(dotAnimation1, {
+                        toValue: 0,
+                        duration: 300,
+                        easing: Easing.ease,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(dotAnimation2, {
+                        toValue: 0,
+                        duration: 300,
+                        easing: Easing.ease,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(dotAnimation3, {
+                        toValue: 0,
+                        duration: 300,
+                        easing: Easing.ease,
+                        useNativeDriver: true,
+                    }),
+                ]),
+            ])
+        ).start();
+
+
+        setTimeout(() => {
+            setIsLoading(false);
+
+            dotAnimation1.setValue(0);
+            dotAnimation2.setValue(0);
+            dotAnimation3.setValue(0);
+            navigation.replace("Home");
+        }, 3000);
+    };
+
+    const dot1Opacity = dotAnimation1.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.3, 1],
+    });
+
+    const dot2Opacity = dotAnimation2.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.3, 1],
+    });
+
+    const dot3Opacity = dotAnimation3.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.3, 1],
+    });
+
+    const dot1Scale = dotAnimation1.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.8, 1.2],
+    });
+
+    const dot2Scale = dotAnimation2.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.8, 1.2],
+    });
+
+    const dot3Scale = dotAnimation3.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.8, 1.2],
+    });
 
     return (
         <View style={styles.container}>
@@ -24,18 +120,15 @@ export default function Login({ navigation }) {
                 <Text style={styles.logoText}>Sharegrid</Text>
             </View>
 
-
             <Text style={styles.title}>Sign in to Continue</Text>
 
-
-            <Text style={styles.label}>E-mail</Text>
+            <Text style={styles.label}>E-mail/ Username</Text>
             <TextInput
                 placeholder="Enter your email"
                 placeholderTextColor="#999"
                 style={styles.input}
                 keyboardType="email-address"
             />
-
 
             <Text style={styles.label}>Password</Text>
             <View style={styles.passwordContainer}>
@@ -57,26 +150,61 @@ export default function Login({ navigation }) {
                 </TouchableOpacity>
             </View>
 
-
             <TouchableOpacity style={{ alignSelf: "flex-end", marginBottom: 25 }}>
                 <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
 
-
             <TouchableOpacity
-                style={styles.loginButton}
-                onPress={() => navigation.replace("Home")}
+                style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+                onPress={handleLogin}
+                disabled={isLoading}
             >
-                <Text style={styles.loginText}>•••</Text>
+                {isLoading ? (
+                    <View style={styles.loadingContainer}>
+                        <Animated.Text
+                            style={[
+                                styles.loadingDot,
+                                {
+                                    opacity: dot1Opacity,
+                                    transform: [{ scale: dot1Scale }]
+                                }
+                            ]}
+                        >
+                            •
+                        </Animated.Text>
+                        <Animated.Text
+                            style={[
+                                styles.loadingDot,
+                                {
+                                    opacity: dot2Opacity,
+                                    transform: [{ scale: dot2Scale }]
+                                }
+                            ]}
+                        >
+                            •
+                        </Animated.Text>
+                        <Animated.Text
+                            style={[
+                                styles.loadingDot,
+                                {
+                                    opacity: dot3Opacity,
+                                    transform: [{ scale: dot3Scale }]
+                                }
+                            ]}
+                        >
+                            •
+                        </Animated.Text>
+                    </View>
+                ) : (
+                    <Text style={styles.loginText}>•••</Text>
+                )}
             </TouchableOpacity>
-
 
             <View style={styles.dividerContainer}>
                 <View style={styles.divider} />
                 <Text style={styles.dividerText}>Or Login With</Text>
                 <View style={styles.divider} />
             </View>
-
 
             <TouchableOpacity style={styles.socialButton}>
                 <View style={styles.socialButtonContent}>
@@ -85,7 +213,6 @@ export default function Login({ navigation }) {
                 </View>
             </TouchableOpacity>
 
-
             <TouchableOpacity style={styles.socialButton}>
                 <View style={styles.socialButtonContent}>
                     <Ionicons name="logo-apple" size={22} color="black" />
@@ -93,9 +220,8 @@ export default function Login({ navigation }) {
                 </View>
             </TouchableOpacity>
 
-
             <View style={styles.footer}>
-                <Text style={{ color: "#fff" }}>Don't have an account? </Text>
+                <Text style={{ color: "#000" }}>Don't have an account? </Text>
                 <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
                     <Text style={{ color: "#2979FF" }}>Sign up</Text>
                 </TouchableOpacity>
@@ -107,7 +233,7 @@ export default function Login({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#000",
+        backgroundColor: "#F9FAFB",
         paddingHorizontal: 20,
         justifyContent: "center",
     },
@@ -116,6 +242,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         marginBottom: 25,
+
     },
     logo: {
         width: 40,
@@ -130,12 +257,12 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontWeight: "600",
-        color: "#fff",
+        color: "#000",
         textAlign: "center",
         marginBottom: 30,
     },
     label: {
-        color: "#fff",
+        color: "#000",
         fontSize: 14,
         marginBottom: 5,
     },
@@ -174,10 +301,24 @@ const styles = StyleSheet.create({
         alignItems: "center",
         marginBottom: 25,
     },
+    loginButtonDisabled: {
+        opacity: 0.8,
+    },
     loginText: {
         color: "#fff",
         fontSize: 16,
         fontWeight: "600",
+    },
+    loadingContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    loadingDot: {
+        color: "#fff",
+        fontSize: 24,
+        marginHorizontal: 2,
+        fontWeight: "bold",
     },
     dividerContainer: {
         flexDirection: "row",
@@ -190,7 +331,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#444",
     },
     dividerText: {
-        color: "#999",
+        color: "#000",
         marginHorizontal: 10,
         fontSize: 12,
     },
@@ -207,7 +348,7 @@ const styles = StyleSheet.create({
     },
     socialText: {
         fontSize: 14,
-        color: "#000",
+        color: "#9EA2AD",
         marginLeft: 10,
         fontWeight: "500",
     },
