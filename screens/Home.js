@@ -29,7 +29,7 @@ export default function RoleSelection({ navigation }) {
             <View style={styles.buttonRow}>
                 <TouchableOpacity
                     style={styles.optionButton}
-                    onPress={() => navigation.replace("UserHome")}
+                    onPress={() => navigation.replace("HomeScreen")}
                 >
                     <Text style={styles.optionText}>User</Text>
                 </TouchableOpacity>

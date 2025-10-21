@@ -117,7 +117,7 @@ export default function Login({ navigation }) {
                     style={styles.logo}
                     resizeMode="contain"
                 />
-                <Text style={styles.logoText}>Sharegrid</Text>
+                <Text style={styles.logoText}>ShareGrid</Text>
             </View>
 
             <Text style={styles.title}>Sign in to Continue</Text>
