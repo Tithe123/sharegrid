@@ -16,8 +16,10 @@ export default function ViewWalletScreen() {
   const navigation = useNavigation();
   const [showBalance, setShowBalance] = useState(true);
   const [showFundingOptions, setShowFundingOptions] = useState(false);
+  const [showWithdrawalOptions, setShowWithdrawalOptions] = useState(false);
 
   const slideAnim = useRef(new Animated.Value(600)).current;
+  const withdrawalSlideAnim = useRef(new Animated.Value(600)).current;
 
   const balance = "5,334.90";
   const earned = "1,850";
@@ -38,6 +40,22 @@ export default function ViewWalletScreen() {
       }).start();
     }
   }, [showFundingOptions]);
+
+  useEffect(() => {
+    if (showWithdrawalOptions) {
+      Animated.timing(withdrawalSlideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(withdrawalSlideAnim, {
+        toValue: 600,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showWithdrawalOptions]);
 
   return (
     <View style={styles.container}>
@@ -104,7 +122,10 @@ export default function ViewWalletScreen() {
       </LinearGradient>
 
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.actionBtn}>
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={() => setShowWithdrawalOptions(true)}
+        >
           <View style={styles.iconCircle}>
             <Feather name="arrow-up-right" size={20} color="#0056D2" />
           </View>
@@ -121,7 +142,10 @@ export default function ViewWalletScreen() {
           <Text style={styles.actionText}>Deposit</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionBtn}>
+        <TouchableOpacity 
+          style={styles.actionBtn}
+          onPress={() => navigation.navigate('Payment')}
+        >
           <View style={styles.iconCircle}>
             <Feather name="repeat" size={20} color="#0056D2" />
           </View>
@@ -145,7 +169,7 @@ export default function ViewWalletScreen() {
         <Ionicons name="phone-portrait" size={65} color="#fff" />
       </View>
 
-
+      {/* Fund Wallet Modal */}
       {showFundingOptions && (
         <View style={styles.overlay}>
           <TouchableWithoutFeedback onPress={() => setShowFundingOptions(false)}>
@@ -176,7 +200,9 @@ export default function ViewWalletScreen() {
               }}
             >
               <View style={styles.optionRow}>
-                <Ionicons name="card-outline" size={20} color="#0056D2" />
+                <View style={styles.optionIconContainer}>
+                  <Ionicons name="card-outline" size={20} color="#0056D2" />
+                </View>
                 <View>
                   <Text style={styles.optionTitle}>Fiat</Text>
                   <Text style={styles.optionDesc}>
@@ -195,11 +221,81 @@ export default function ViewWalletScreen() {
               }}
             >
               <View style={styles.optionRow}>
-                <Ionicons name="logo-bitcoin" size={20} color="#0056D2" />
+                <View style={styles.optionIconContainer}>
+                  <Ionicons name="logo-bitcoin" size={20} color="#0056D2" />
+                </View>
                 <View>
                   <Text style={styles.optionTitle}>Crypto</Text>
                   <Text style={styles.optionDesc}>
                     Transfer from a wallet/exchange
+                  </Text>
+                </View>
+              </View>
+              <Feather name="chevron-right" size={18} color="#777" />
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+      )}
+
+      {/* Withdrawal Modal */}
+      {showWithdrawalOptions && (
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback onPress={() => setShowWithdrawalOptions(false)}>
+            <View style={styles.backdrop} />
+          </TouchableWithoutFeedback>
+
+          <Animated.View
+            style={[
+              styles.bottomSheet,
+              { transform: [{ translateY: withdrawalSlideAnim }] },
+            ]}
+          >
+            <View style={styles.sheetHeaderRow}>
+              <Text style={styles.sheetTitle}>Withdraw Funds</Text>
+              <TouchableOpacity onPress={() => setShowWithdrawalOptions(false)}>
+                <Feather name="x" size={22} color="#000" />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.sheetSubText}>
+              Select your preferred withdrawal method
+            </Text>
+
+            <TouchableOpacity
+              style={styles.option}
+              onPress={() => {
+                setShowWithdrawalOptions(false);
+                navigation.navigate("WithdrawFiat");
+              }}
+            >
+              <View style={styles.optionRow}>
+                <View style={styles.optionIconContainer}>
+                  <Ionicons name="card-outline" size={20} color="#0056D2" />
+                </View>
+                <View>
+                  <Text style={styles.optionTitle}>Fiat</Text>
+                  <Text style={styles.optionDesc}>
+                    Withdraw to a bank account
+                  </Text>
+                </View>
+              </View>
+              <Feather name="chevron-right" size={18} color="#777" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.option}
+              onPress={() => {
+                setShowWithdrawalOptions(false);
+                navigation.navigate("CryptoWithdrawal");
+              }}
+            >
+              <View style={styles.optionRow}>
+                <View style={styles.optionIconContainer}>
+                  <Ionicons name="logo-bitcoin" size={20} color="#0056D2" />
+                </View>
+                <View>
+                  <Text style={styles.optionTitle}>Crypto Wallet</Text>
+                  <Text style={styles.optionDesc}>
+                    Withdraw to a crypto wallet/exchange
                   </Text>
                 </View>
               </View>
@@ -216,7 +312,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f7fb", padding: 20 },
   headerCard: {
     borderRadius: 20,
-    paddingTop: Platform.OS === "ios" ? 50 : 30,
+    paddingTop: Platform.OS === "ios" ? 30 : 30,
     paddingHorizontal: 25,
     paddingBottom: 30,
     marginTop: 20,
@@ -307,7 +403,6 @@ const styles = StyleSheet.create({
   },
   bannerBtnText: { color: "#fff", fontSize: 13, fontWeight: "600" },
 
-
   overlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "flex-end",
@@ -319,24 +414,58 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
+    borderWidth: 1,
+    borderColor: "#f0f0f0", 
   },
   sheetHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  sheetTitle: { fontSize: 20, fontWeight: "700" },
-  sheetSubText: { color: "#777", marginTop: 4, marginBottom: 15 },
+  sheetTitle: { 
+    fontSize: 20, 
+    fontWeight: "700",
+    color: "#000", 
+  },
+  sheetSubText: { 
+    color: "#777", 
+    marginTop: 4, 
+    marginBottom: 15,
+  },
   option: {
-    backgroundColor: "#f2f5ff",
+    backgroundColor: "#fff", 
     borderRadius: 12,
     padding: 18,
     marginBottom: 15,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#f0f0f0", 
   },
-  optionRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  optionTitle: { fontSize: 17, fontWeight: "600", color: "#0056D2" },
-  optionDesc: { color: "#555", fontSize: 13, marginTop: 2 },
+  optionRow: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    gap: 10 
+  },
+  optionIconContainer: {
+    backgroundColor: "#f0f4ff", 
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e0e8ff",
+  },
+  optionTitle: { 
+    fontSize: 17, 
+    fontWeight: "600", 
+    color: "#000", 
+  },
+  optionDesc: { 
+    color: "#555", 
+    fontSize: 13, 
+    marginTop: 2,
+  },
 });

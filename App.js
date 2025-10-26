@@ -15,7 +15,11 @@ import FundWalletOptionsScreen from './screens/FundWalletOptionsScreen';
 import FundWalletScreen from './screens/FundWalletScreen';
 import ViewWalletScreen from './screens/ViewWalletScreen';
 import DepositCryptoScreen from './screens/DepositCryptoScreen';
+import PaymentScreen from './screens/PaymentScreen';
+import CryptoWithdrawalScreen from './screens/CryptoWithdrawalScreen';
+
 const Stack = createNativeStackNavigator();
+
 
 export default function App() {
   return (
@@ -35,6 +39,9 @@ export default function App() {
         <Stack.Screen name="FundWallet" component={FundWalletScreen} />
         <Stack.Screen name="ViewWallet" component={ViewWalletScreen} />
         <Stack.Screen name="DepositCrypto" component={DepositCryptoScreen} />
+        <Stack.Screen name="Payment" component={PaymentScreen} />
+        <Stack.Screen name="CryptoWithdrawal" component={CryptoWithdrawalScreen} />
+       
        
       </Stack.Navigator>
     </NavigationContainer>
