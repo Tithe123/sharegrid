@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === "ios" ? 30 : 30,
     paddingHorizontal: 25,
     paddingBottom: 30,
-    marginTop: 20,
+    marginTop: 50,
     marginBottom: 25,
   },
   topRow: {
