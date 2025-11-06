@@ -264,7 +264,7 @@ export default function ViewWalletScreen() {
               style={styles.option}
               onPress={() => {
                 setShowWithdrawalOptions(false);
-                navigation.navigate("WithdrawFiat");
+                navigation.navigate("FiatWithdraw");
               }}
             >
               <View style={styles.optionRow}>

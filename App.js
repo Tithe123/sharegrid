@@ -17,7 +17,9 @@ import ViewWalletScreen from './screens/ViewWalletScreen';
 import DepositCryptoScreen from './screens/DepositCryptoScreen';
 import PaymentScreen from './screens/PaymentScreen';
 import CryptoWithdrawalScreen from './screens/CryptoWithdrawalScreen';
-
+import FiatWithdrawScreen from './screens/FiatWithdraw';
+import beneficiary from './screens/beneficiary';
+import SavedBeneficiariesScreen from './screens/beneficiary2';
 const Stack = createNativeStackNavigator();
 
 
@@ -37,11 +39,13 @@ export default function App() {
         <Stack.Screen name="NearbyWifi" component={NearbyWifi} />
         <Stack.Screen name="FundWalletOptions" component={FundWalletOptionsScreen} />
         <Stack.Screen name="FundWallet" component={FundWalletScreen} />
-        <Stack.Screen name="ViewWallet" component={ViewWalletScreen} />
+        <Stack.Screen name="ViewWallet" component={ViewWalletScreen} /> 
         <Stack.Screen name="DepositCrypto" component={DepositCryptoScreen} />
         <Stack.Screen name="Payment" component={PaymentScreen} />
         <Stack.Screen name="CryptoWithdrawal" component={CryptoWithdrawalScreen} />
-       
+        <Stack.Screen name="FiatWithdraw" component={FiatWithdrawScreen} />
+        <Stack.Screen name="Beneficiary" component={beneficiary} />
+        <Stack.Screen name="SavedBeneficiaries" component={SavedBeneficiariesScreen} />
        
       </Stack.Navigator>
     </NavigationContainer>
