@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Modal } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 
@@ -11,6 +12,7 @@ const wifiList = [
 ];
 
 export default function NearbyWifiScreen() {
+    const navigation = useNavigation();
     const [connectedWifi, setConnectedWifi] = useState(null);
     const [isFilterVisible, setIsFilterVisible] = useState(false);
     const [speedRange, setSpeedRange] = useState([10, 50]);
@@ -84,7 +86,7 @@ export default function NearbyWifiScreen() {
         <View style={styles.container}>
             <View style={styles.headerCard}>
                 <View style={styles.headerRow}>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Ionicons name="chevron-back" size={24} color="black" />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Nearby Wifi</Text>

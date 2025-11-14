@@ -175,7 +175,7 @@ const HomeScreen = () => {
 
 
                 <Image
-                    source={{ uri: "https://i.imgur.com/5QZrFTO.png" }}
+                    source={{ uri: "https://res.cloudinary.com/dgr8yasgo/image/upload/v1763115690/Map_Maker__Lagos_Lagos_Nigeria_Retro_rtub6v.png" }}
                     style={styles.map}
                 />
 
