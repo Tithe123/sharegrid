@@ -10,7 +10,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import NavigationBar from "../components/NavigationBar";
+import NavigationBar from "../../components/NavigationBar";
+import { Colors } from '../common';
 
 const HomeScreen = () => {
     const navigation = useNavigation();
@@ -228,7 +229,7 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#F7F9FB" },
+    container: { flex: 1, backgroundColor: Colors.backgroundGray },
     scroll: { paddingBottom: 100 },
 
     toggleContainer: { alignItems: "center", marginTop: 50 },
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
 
 
     walletCard: {
-        backgroundColor: "#007AFF",
+        backgroundColor: Colors.primaryLight,
         marginHorizontal: 20,
         borderRadius: 12,
         padding: 20,
@@ -303,7 +304,7 @@ const styles = StyleSheet.create({
     actionCircle: {
         width: 60,
         height: 60,
-        backgroundColor: "#2563EB",
+        backgroundColor: Colors.primary,
         borderRadius: 30,
         alignItems: "center",
         justifyContent: "center",
@@ -352,12 +353,12 @@ const styles = StyleSheet.create({
     wifiSpeed: { color: "#666", fontSize: 12 },
     wifiRating: { color: "#666", fontSize: 12 },
     connectBtn: {
-        backgroundColor: "#007AFF",
+        backgroundColor: Colors.primaryLight,
         paddingHorizontal: 20,
         paddingVertical: 8,
         borderRadius: 6,
     },
-    connectedBtn: { backgroundColor: "#22C55E" },
+    connectedBtn: { backgroundColor: Colors.successLight },
     connectText: { color: "#fff", fontWeight: "600", fontSize: 13 },
     connectedText: { color: "#fff", fontWeight: "600" },
 

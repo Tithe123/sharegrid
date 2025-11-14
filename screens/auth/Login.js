@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
     View,
     Text,
@@ -6,23 +6,22 @@ import {
     TouchableOpacity,
     TextInput,
     Image,
-    ScrollView,
     Animated,
     Easing
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+import { Colors } from '../common';
 
-export default function Signup({ navigation }) {
+export default function Login({ navigation }) {
     const [secureText, setSecureText] = useState(true);
-    const [confirmSecure, setConfirmSecure] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
 
     const dotAnimation1 = useRef(new Animated.Value(0)).current;
     const dotAnimation2 = useRef(new Animated.Value(0)).current;
     const dotAnimation3 = useRef(new Animated.Value(0)).current;
 
-    const handleSignup = () => {
+    const handleLogin = () => {
         setIsLoading(true);
 
 
@@ -112,22 +111,22 @@ export default function Signup({ navigation }) {
     });
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.container}>
             <View style={styles.logoContainer}>
                 <Image
-                    source={require("../assets/logo2.png")}
+                    source={require("../../assets/logo2.png")}
                     style={styles.logo}
                     resizeMode="contain"
                 />
                 <Text style={styles.logoText}>ShareGrid</Text>
             </View>
 
-            <Text style={styles.title}>Sign up to Continue</Text>
+            <Text style={styles.title}>Sign in to Continue</Text>
 
-            <Text style={styles.label}>E-mail</Text>
+            <Text style={styles.label}>E-mail/ Username</Text>
             <TextInput
                 placeholder="Enter your email"
-                placeholderTextColor="#999"
+                placeholderTextColor={Colors.placeholderText}
                 style={styles.input}
                 keyboardType="email-address"
             />
@@ -136,7 +135,7 @@ export default function Signup({ navigation }) {
             <View style={styles.passwordContainer}>
                 <TextInput
                     placeholder="Enter your password"
-                    placeholderTextColor="#999"
+                    placeholderTextColor={Colors.placeholderText}
                     style={styles.inputPassword}
                     secureTextEntry={secureText}
                 />
@@ -147,35 +146,18 @@ export default function Signup({ navigation }) {
                     <Ionicons
                         name={secureText ? "eye-off-outline" : "eye-outline"}
                         size={20}
-                        color="#666"
+                        color={Colors.textTertiary}
                     />
                 </TouchableOpacity>
             </View>
-            <Text style={styles.passwordHint}>must contain 8 char.</Text>
 
-            <Text style={styles.label}>Confirm Password</Text>
-            <View style={styles.passwordContainer}>
-                <TextInput
-                    placeholder="Confirm password"
-                    placeholderTextColor="#999"
-                    style={styles.inputPassword}
-                    secureTextEntry={confirmSecure}
-                />
-                <TouchableOpacity
-                    onPress={() => setConfirmSecure(!confirmSecure)}
-                    style={styles.eyeIcon}
-                >
-                    <Ionicons
-                        name={confirmSecure ? "eye-off-outline" : "eye-outline"}
-                        size={20}
-                        color="#666"
-                    />
-                </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={{ alignSelf: "flex-end", marginBottom: 25 }}>
+                <Text style={styles.forgotText}>Forgot Password?</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
-                style={[styles.signupButton, isLoading && styles.signupButtonDisabled]}
-                onPress={handleSignup}
+                style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+                onPress={handleLogin}
                 disabled={isLoading}
             >
                 {isLoading ? (
@@ -215,56 +197,53 @@ export default function Signup({ navigation }) {
                         </Animated.Text>
                     </View>
                 ) : (
-                    <Text style={styles.signupText}>•••</Text>
+                    <Text style={styles.loginText}>•••</Text>
                 )}
             </TouchableOpacity>
 
             <View style={styles.dividerContainer}>
                 <View style={styles.divider} />
-                <Text style={styles.dividerText}>Or Sign up With</Text>
+                <Text style={styles.dividerText}>Or Login With</Text>
                 <View style={styles.divider} />
             </View>
 
             <TouchableOpacity style={styles.socialButton}>
                 <View style={styles.socialButtonContent}>
                     <AntDesign name="google" size={20} />
-                    <Text style={styles.socialText}>Sign up with Google</Text>
+                    <Text style={styles.socialText}>Sign in with Google</Text>
                 </View>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.socialButton}>
                 <View style={styles.socialButtonContent}>
                     <Ionicons name="logo-apple" size={22} color="black" />
-                    <Text style={styles.socialText}>Sign up with Apple</Text>
+                    <Text style={styles.socialText}>Sign in with Apple</Text>
                 </View>
             </TouchableOpacity>
 
-
-
             <View style={styles.footer}>
-                <Text style={{ color: "#000" }}>Already have an account? </Text>
-                <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                    <Text style={{ color: "#2979FF" }}>Sign in</Text>
+                <Text style={{ color: Colors.textPrimary }}>Don't have an account? </Text>
+                <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
+                    <Text style={{ color: Colors.primaryBlue }}>Sign up</Text>
                 </TouchableOpacity>
             </View>
-        </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flexGrow: 1,
-        backgroundColor: "#F9FAFB",
+        flex: 1,
+        backgroundColor: Colors.backgroundLight,
         paddingHorizontal: 20,
         justifyContent: "center",
-        paddingVertical: 30,
     },
     logoContainer: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
         marginBottom: 25,
-        marginTop: 50,
+
     },
     logo: {
         width: 40,
@@ -273,69 +252,61 @@ const styles = StyleSheet.create({
     },
     logoText: {
         fontSize: 24,
-        color: "#2979FF",
+        color: Colors.primaryBlue,
         fontWeight: "700",
     },
     title: {
         fontSize: 28,
         fontWeight: "600",
-        color: "#000",
+        color: Colors.textPrimary,
         textAlign: "center",
         marginBottom: 30,
     },
     label: {
-        color: "#000",
+        color: Colors.textPrimary,
         fontSize: 14,
         marginBottom: 5,
-        fontWeight: "500",
     },
     input: {
-        backgroundColor: "#fff",
+        backgroundColor: Colors.white,
         borderRadius: 8,
         paddingHorizontal: 15,
         paddingVertical: 12,
         marginBottom: 15,
-        color: "#000",
-        borderWidth: 1,
-        borderColor: "#e9ecef",
+        color: Colors.textPrimary,
     },
     passwordContainer: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#fff",
+        backgroundColor: Colors.white,
         borderRadius: 8,
-        marginBottom: 5,
-        borderWidth: 1,
-        borderColor: "#e9ecef",
+        marginBottom: 10,
     },
     inputPassword: {
         flex: 1,
         paddingHorizontal: 15,
         paddingVertical: 12,
-        color: "#000",
+        color: Colors.textPrimary,
     },
     eyeIcon: {
         paddingHorizontal: 10,
     },
-    passwordHint: {
-        color: "#666",
-        fontSize: 12,
-        marginBottom: 15,
-        marginLeft: 5,
+    forgotText: {
+        color: Colors.primaryBlue,
+        fontSize: 13,
     },
-    signupButton: {
-        backgroundColor: "#2979FF",
+    loginButton: {
+        backgroundColor: Colors.primaryBlue,
         paddingVertical: 15,
         borderRadius: 8,
         alignItems: "center",
-        marginBottom: 20,
-        marginTop: 10,
+        marginBottom: 25,
     },
-    signupButtonDisabled: {
+    loginButtonDisabled: {
         opacity: 0.8,
     },
-    signupText: {
-        color: "#fff",
+    loginText: {
+        color: Colors.white,
         fontSize: 16,
         fontWeight: "600",
     },
@@ -345,7 +316,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     loadingDot: {
-        color: "#fff",
+        color: Colors.white,
         fontSize: 24,
         marginHorizontal: 2,
         fontWeight: "bold",
@@ -358,20 +329,18 @@ const styles = StyleSheet.create({
     divider: {
         flex: 1,
         height: 1,
-        backgroundColor: "#e9ecef",
+        backgroundColor: Colors.borderDark,
     },
     dividerText: {
-        color: "#666",
+        color: Colors.textPrimary,
         marginHorizontal: 10,
-        fontSize: 14,
+        fontSize: 12,
     },
     socialButton: {
-        backgroundColor: "#fff",
+        backgroundColor: Colors.white,
         borderRadius: 8,
         paddingVertical: 12,
         marginBottom: 15,
-        borderWidth: 1,
-        borderColor: "#e9ecef",
     },
     socialButtonContent: {
         flexDirection: "row",
@@ -380,24 +349,13 @@ const styles = StyleSheet.create({
     },
     socialText: {
         fontSize: 14,
-        color: "#9EA2AD",
+        color: Colors.textLight,
         marginLeft: 10,
-        fontWeight: "500",
-    },
-    terms: {
-        textAlign: "center",
-        color: "#666",
-        marginTop: 10,
-        marginBottom: 20,
-    },
-    link: {
-        color: "#2979FF",
         fontWeight: "500",
     },
     footer: {
         flexDirection: "row",
         justifyContent: "center",
-        marginTop: 10,
-        marginBottom: 30,
+        marginTop: 20,
     },
 });

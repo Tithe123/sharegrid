@@ -59,7 +59,7 @@ export default function SplashScreen({ navigation }) {
     ]}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       <View style={styles.row}>
-        <Image source={require("../assets/logo2.png")} style={styles.logo} />
+        <Image source={require("../../assets/logo2.png")} style={styles.logo} />
         <Text style={styles.typewriter}>{displayText}</Text>
       </View>
     </Animated.View>

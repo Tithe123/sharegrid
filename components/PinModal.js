@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import { Colors } from '../screens/common';
 
 export default function PinModal({ visible, onCancel, onConfirm }) {
   const [pin, setPin] = useState('');
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: '85%',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderRadius: 12,
     padding: 25,
     alignItems: 'center',
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Colors.border,
     paddingVertical: 12,
     borderRadius: 8,
     marginRight: 10,
@@ -79,11 +80,11 @@ const styles = StyleSheet.create({
   },
   confirmBtn: {
     flex: 1,
-    backgroundColor: '#1E63EE',
+    backgroundColor: Colors.primaryDark,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
-  cancelText: { color: '#333' },
-  confirmText: { color: '#fff', fontWeight: '600' },
+  cancelText: { color: Colors.textSecondary },
+  confirmText: { color: Colors.white, fontWeight: '600' },
 });

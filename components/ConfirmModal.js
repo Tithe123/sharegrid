@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { Colors } from '../screens/common';
 
 export default function ConfirmModal({ visible, onCancel, onYes }) {
   return (
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: '85%',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Colors.border,
     paddingVertical: 12,
     borderRadius: 8,
     marginRight: 10,
@@ -56,11 +57,11 @@ const styles = StyleSheet.create({
   },
   yesBtn: {
     flex: 1,
-    backgroundColor: '#1E63EE',
+    backgroundColor: Colors.primaryDark,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
-  cancelText: { color: '#333' },
-  yesText: { color: '#fff', fontWeight: '600' },
+  cancelText: { color: Colors.textSecondary },
+  yesText: { color: Colors.white, fontWeight: '600' },
 });

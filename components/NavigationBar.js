@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Colors } from '../screens/common';
 import { useNavigation, useRoute } from "@react-navigation/native";
 
 const NavigationBar = ({ isWifiConnected, onWifiPress }) => {
@@ -45,8 +46,8 @@ const NavigationBar = ({ isWifiConnected, onWifiPress }) => {
                 name={tab.icon}
                 size={isWifi ? 28 : 26}
                 color={
-                  isWifi ? "#fff" :
-                    (isActive || isHovered) ? "#007AFF" : "#A0A0A0"
+                  isWifi ? Colors.white :
+                    (isActive || isHovered) ? Colors.primaryLight : Colors.textDisabled
                 }
               />
             </View>
@@ -75,10 +76,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: Colors.white,
     height: 80,
     borderTopWidth: 0.5,
-    borderColor: "#ddd",
+    borderColor: Colors.divider,
     paddingHorizontal: 10,
   },
   tabButton: {
@@ -95,14 +96,14 @@ const styles = StyleSheet.create({
     marginTop: -35,
   },
   wifiContainer: {
-    backgroundColor: "#9E9E9E",
+    backgroundColor: Colors.wifiDisconnected,
     width: 60,
     height: 60,
     borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
     elevation: 8,
-    shadowColor: "#000",
+    shadowColor: Colors.shadow,
     shadowOffset: {
       width: 0,
       height: 4,
@@ -111,14 +112,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
   },
   wifiContainerHovered: {
-    backgroundColor: "#007AFF",
+    backgroundColor: Colors.primaryLight,
     transform: [{ scale: 1.05 }],
   },
   wifiContainerActive: {
-    backgroundColor: "#007AFF",
+    backgroundColor: Colors.primaryLight,
   },
   wifiContainerConnected: {
-    backgroundColor: "#22C55E",
+    backgroundColor: Colors.wifiConnected,
   },
   connectionIndicator: {
     position: "absolute",
@@ -127,18 +128,18 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#22C55E",
+    backgroundColor: Colors.wifiConnected,
     borderWidth: 1,
-    borderColor: "#fff",
+    borderColor: Colors.white,
   },
   tabLabel: {
     fontSize: 10,
     marginTop: 4,
-    color: "#A0A0A0",
+    color: Colors.textDisabled,
     fontWeight: "500",
   },
   activeTabLabel: {
-    color: "#007AFF",
+    color: Colors.primaryLight,
     fontWeight: "600",
   },
 });

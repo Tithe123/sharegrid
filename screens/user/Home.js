@@ -13,7 +13,7 @@ export default function RoleSelection({ navigation }) {
 
             <View style={styles.logoContainer}>
                 <Image
-                    source={require("../assets/logo2.png")}
+                    source={require("../../assets/logo2.png")}
                     style={styles.logo}
                     resizeMode="contain"
                 />
