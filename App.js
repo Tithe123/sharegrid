@@ -7,7 +7,7 @@ import Login from "./screens/Login";
 import Signup from './screens/Signup';
 import ForgotPassword from './screens/ForgotPassword';
 import Verify from './screens/Verify';
-import create from './screens/Create';
+import Create from './screens/create';
 import Home from './screens/Home';
 import HomeScreen from './screens/HomeScreen';
 import NearbyWifi from './screens/NearbyWifi';
@@ -33,7 +33,7 @@ export default function App() {
         <Stack.Screen name="Signup" component={Signup} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="Verify" component={Verify} />
-        <Stack.Screen name="create" component={create} />
+        <Stack.Screen name="create" component={Create} />
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="NearbyWifi" component={NearbyWifi} />
@@ -46,7 +46,6 @@ export default function App() {
         <Stack.Screen name="FiatWithdraw" component={FiatWithdrawScreen} />
         <Stack.Screen name="Beneficiary" component={beneficiary} />
         <Stack.Screen name="SavedBeneficiaries" component={SavedBeneficiariesScreen} />
-       
       </Stack.Navigator>
     </NavigationContainer>
   );
