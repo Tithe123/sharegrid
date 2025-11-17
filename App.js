@@ -7,6 +7,7 @@ import SplashScreen from './screens/auth/SplashScreen';
 import Onboarding from './screens/auth/Onboarding';
 import Login from './screens/auth/Login';
 import Signup from './screens/auth/Signup';
+import EnhancedSignup from './screens/auth/EnhancedSignup';
 import ForgotPassword from './screens/auth/ForgotPassword';
 import Verify from './screens/auth/Verify';
 import CreateForgotPassword from './screens/auth/createForgotPassword';
@@ -36,6 +37,7 @@ export default function App() {
         <Stack.Screen name="Onboarding" component={Onboarding} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Signup" component={Signup} />
+        <Stack.Screen name="EnhancedSignup" component={EnhancedSignup} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="Verify" component={Verify} />
         <Stack.Screen name="createForgotPassword" component={CreateForgotPassword} />

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { View, Text, StyleSheet, StatusBar, Image, Animated } from "react-native";
+import authService from "../../services/authService";
 
 export default function SplashScreen({ navigation }) {
   const [displayText, setDisplayText] = useState("");
@@ -37,8 +38,14 @@ export default function SplashScreen({ navigation }) {
           duration: 1000,
           useNativeDriver: true,
         })
-      ]).start(() => {
-        navigation.replace("Onboarding");
+      ]).start(async () => {
+        // Check if user is already authenticated
+        const isAuthenticated = await authService.isAuthenticated();
+        if (isAuthenticated) {
+          navigation.replace("Home");
+        } else {
+          navigation.replace("Onboarding");
+        }
       });
     }, 9000);
 

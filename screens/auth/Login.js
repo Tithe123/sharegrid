@@ -7,24 +7,92 @@ import {
     TextInput,
     Image,
     Animated,
-    Easing
+    Easing,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { Colors } from '../common';
+import authService from "../../services/authService";
+import ErrorModal from "../../components/errormodal";
 
 export default function Login({ navigation }) {
     const [secureText, setSecureText] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
+    const [errorModal, setErrorModal] = useState({
+        visible: false,
+        message: ''
+    });
 
     const dotAnimation1 = useRef(new Animated.Value(0)).current;
     const dotAnimation2 = useRef(new Animated.Value(0)).current;
     const dotAnimation3 = useRef(new Animated.Value(0)).current;
 
-    const handleLogin = () => {
+    const showError = (message) => {
+        setErrorModal({ visible: true, message });
+    };
+
+    const hideError = () => {
+        setErrorModal({ visible: false, message: '' });
+    };
+
+    const handleLogin = async () => {
+        if (!formData.email || !formData.password) {
+            showError('Please fill in all fields');
+            return;
+        }
+
         setIsLoading(true);
+        startLoadingAnimation();
 
+        try {
+            await authService.login(formData.email, formData.password);
+            stopLoadingAnimation();
+            setIsLoading(false);
+            navigation.replace("Home");
+        } catch (error) {
+            stopLoadingAnimation();
+            setIsLoading(false);
+            showError(error.message);
+        }
+    };
 
+    const handleGoogleLogin = async () => {
+        setIsLoading(true);
+        startLoadingAnimation();
+
+        try {
+            await authService.signInWithGoogle();
+            stopLoadingAnimation();
+            setIsLoading(false);
+            navigation.replace("Home");
+        } catch (error) {
+            stopLoadingAnimation();
+            setIsLoading(false);
+            showError(error.message);
+        }
+    };
+
+    const handleAppleLogin = async () => {
+        setIsLoading(true);
+        startLoadingAnimation();
+
+        try {
+            await authService.signInWithApple();
+            stopLoadingAnimation();
+            setIsLoading(false);
+            navigation.replace("Home");
+        } catch (error) {
+            stopLoadingAnimation();
+            setIsLoading(false);
+            showError(error.message);
+        }
+    };
+
+    const startLoadingAnimation = () => {
         Animated.loop(
             Animated.sequence([
                 Animated.timing(dotAnimation1, {
@@ -68,16 +136,12 @@ export default function Login({ navigation }) {
                 ]),
             ])
         ).start();
+    };
 
-
-        setTimeout(() => {
-            setIsLoading(false);
-
-            dotAnimation1.setValue(0);
-            dotAnimation2.setValue(0);
-            dotAnimation3.setValue(0);
-            navigation.replace("Home");
-        }, 3000);
+    const stopLoadingAnimation = () => {
+        dotAnimation1.setValue(0);
+        dotAnimation2.setValue(0);
+        dotAnimation3.setValue(0);
     };
 
     const dot1Opacity = dotAnimation1.interpolate({
@@ -129,6 +193,8 @@ export default function Login({ navigation }) {
                 placeholderTextColor={Colors.placeholderText}
                 style={styles.input}
                 keyboardType="email-address"
+                value={formData.email}
+                onChangeText={(text) => setFormData({...formData, email: text})}
             />
 
             <Text style={styles.label}>Password</Text>
@@ -138,6 +204,8 @@ export default function Login({ navigation }) {
                     placeholderTextColor={Colors.placeholderText}
                     style={styles.inputPassword}
                     secureTextEntry={secureText}
+                    value={formData.password}
+                    onChangeText={(text) => setFormData({...formData, password: text})}
                 />
                 <TouchableOpacity
                     onPress={() => setSecureText(!secureText)}
@@ -207,14 +275,22 @@ export default function Login({ navigation }) {
                 <View style={styles.divider} />
             </View>
 
-            <TouchableOpacity style={styles.socialButton}>
+            <TouchableOpacity 
+                style={[styles.socialButton, isLoading && styles.loginButtonDisabled]}
+                onPress={handleGoogleLogin}
+                disabled={isLoading}
+            >
                 <View style={styles.socialButtonContent}>
                     <AntDesign name="google" size={20} />
                     <Text style={styles.socialText}>Sign in with Google</Text>
                 </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.socialButton}>
+            <TouchableOpacity 
+                style={[styles.socialButton, isLoading && styles.loginButtonDisabled]}
+                onPress={handleAppleLogin}
+                disabled={isLoading}
+            >
                 <View style={styles.socialButtonContent}>
                     <Ionicons name="logo-apple" size={22} color="black" />
                     <Text style={styles.socialText}>Sign in with Apple</Text>
@@ -227,6 +303,12 @@ export default function Login({ navigation }) {
                     <Text style={{ color: Colors.primaryBlue }}>Sign up</Text>
                 </TouchableOpacity>
             </View>
+
+            <ErrorModal
+                visible={errorModal.visible}
+                message={errorModal.message}
+                onClose={hideError}
+            />
         </View>
     );
 }
