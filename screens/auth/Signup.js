@@ -12,19 +12,37 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { GoogleIcon } from "../common/svgs";
+import { Colors } from '../common';
+import authService from "../../services/authService";
+import ErrorModal from "../../components/errormodal";
 
 export default function Signup({ navigation }) {
   const [secureText, setSecureText] = useState(true);
   const [confirmSecure, setConfirmSecure] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [errorModal, setErrorModal] = useState({
+    visible: false,
+    message: ''
+  });
 
   const dotAnimation1 = useRef(new Animated.Value(0)).current;
   const dotAnimation2 = useRef(new Animated.Value(0)).current;
   const dotAnimation3 = useRef(new Animated.Value(0)).current;
 
-  const handleSignup = () => {
-    setIsLoading(true);
+  const showError = (message) => {
+    setErrorModal({ visible: true, message });
+  };
 
+  const hideError = () => {
+    setErrorModal({ visible: false, message: '' });
+  };
+
+  const startLoadingAnimation = () => {
     Animated.loop(
       Animated.sequence([
         Animated.timing(dotAnimation1, {
@@ -68,16 +86,72 @@ export default function Signup({ navigation }) {
         ]),
       ])
     ).start();
+  };
 
+  const stopLoadingAnimation = () => {
+    dotAnimation1.setValue(0);
+    dotAnimation2.setValue(0);
+    dotAnimation3.setValue(0);
+  };
 
-    setTimeout(() => {
+  const handleSignup = async () => {
+    if (!formData.email || !formData.password || !formData.confirmPassword) {
+      showError('Please fill in all fields');
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      showError('Password must be at least 8 characters');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      showError('Passwords do not match');
+      return;
+    }
+
+    setIsLoading(true);
+    startLoadingAnimation();
+
+    try {
+      const result = await authService.signup(
+        formData.email, 
+        formData.password,
+        formData.firstName,
+        formData.lastName
+      );
+      stopLoadingAnimation();
       setIsLoading(false);
 
-      dotAnimation1.setValue(0);
-      dotAnimation2.setValue(0);
-      dotAnimation3.setValue(0);
+      console.log('Signup result:', result);
+      
+      // Navigate to email verification screen
+      if (result.needsEmailVerification) {
+        navigation.navigate("VerifyEmail", { email: formData.email });
+      } else {
+        navigation.replace("Home");
+      }
+    } catch (error) {
+      stopLoadingAnimation();
+      setIsLoading(false);
+      showError(error.message);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setIsLoading(true);
+    startLoadingAnimation();
+
+    try {
+      await authService.signInWithGoogle();
+      stopLoadingAnimation();
+      setIsLoading(false);
       navigation.replace("Home");
-    }, 3000);
+    } catch (error) {
+      stopLoadingAnimation();
+      setIsLoading(false);
+      showError(error.message);
+    }
   };
 
   const dot1Opacity = dotAnimation1.interpolate({
@@ -129,6 +203,8 @@ export default function Signup({ navigation }) {
         placeholderTextColor="#999"
         style={styles.input}
         keyboardType="email-address"
+        value={formData.email}
+        onChangeText={(text) => setFormData({...formData, email: text.toLowerCase().trim()})}
       />
 
       <Text style={styles.label}>Password</Text>
@@ -138,6 +214,8 @@ export default function Signup({ navigation }) {
           placeholderTextColor="#999"
           style={styles.inputPassword}
           secureTextEntry={secureText}
+          value={formData.password}
+          onChangeText={(text) => setFormData({...formData, password: text})}
         />
         <TouchableOpacity
           onPress={() => setSecureText(!secureText)}
@@ -159,6 +237,8 @@ export default function Signup({ navigation }) {
           placeholderTextColor="#999"
           style={styles.inputPassword}
           secureTextEntry={confirmSecure}
+          value={formData.confirmPassword}
+          onChangeText={(text) => setFormData({...formData, confirmPassword: text})}
         />
         <TouchableOpacity
           onPress={() => setConfirmSecure(!confirmSecure)}
@@ -225,8 +305,9 @@ export default function Signup({ navigation }) {
       </View>
 
       <TouchableOpacity 
-        style={styles.socialButton}
-        onPress={() => navigation.navigate("EnhancedSignup", { method: "google" })}
+        style={[styles.socialButton, isLoading && styles.signupButtonDisabled]}
+        onPress={handleGoogleSignup}
+        disabled={isLoading}
       >
         <View style={styles.socialButtonContent}>
           <GoogleIcon />
@@ -234,22 +315,18 @@ export default function Signup({ navigation }) {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity 
-        style={styles.socialButton}
-        onPress={() => navigation.navigate("EnhancedSignup", { method: "apple" })}
-      >
-        <View style={styles.socialButtonContent}>
-          <Ionicons name="logo-apple" size={24} color="black" />
-          <Text style={styles.socialText}>Sign up with Apple</Text>
-        </View>
-      </TouchableOpacity>
-
       <View style={styles.footer}>
         <Text style={{ color: "#000" }}>Already have an account? </Text>
         <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-          <Text style={{ color: "#2979FF" }}>Sign in</Text>
+          <Text style={{ color: Colors.primary }}>Sign in</Text>
         </TouchableOpacity>
       </View>
+
+      <ErrorModal
+        visible={errorModal.visible}
+        message={errorModal.message}
+        onClose={hideError}
+      />
     </ScrollView>
   );
 }
@@ -276,7 +353,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: 24,
-    color: "#2979FF",
+    color: Colors.primary,
     fontWeight: "700",
   },
   title: {
@@ -327,7 +404,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   signupButton: {
-    backgroundColor: "#2979FF",
+    backgroundColor: Colors.primary,
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -373,8 +450,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 12,
     marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#e9ecef",
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderSocial,
   },
   socialButtonContent: {
     flexDirection: "row",

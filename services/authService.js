@@ -9,6 +9,9 @@ import { AUTH_CONFIG } from '../config/auth.config';
 class AuthService {
   constructor() {
     this.baseURL = 'http://localhost:3001/api'; // Backend API for user/profile management
+    this.tokenKey = '@sharegrid_token';
+    this.userKey = '@sharegrid_user';
+    this.onboardedKey = '@sharegrid_onboarded';
     
     // Configure Google Sign-In with platform-specific client ID
     this.configureGoogleSignIn();
@@ -42,11 +45,12 @@ class AuthService {
     try {
       console.log('Starting email signup with Supabase...');
       
-      // Sign up with Supabase Auth
+      // Sign up with Supabase Auth (with email confirmation disabled)
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: undefined, // Disable Supabase email confirmation
           data: {
             first_name: firstName,
             last_name: lastName,
@@ -60,21 +64,38 @@ class AuthService {
 
       console.log('Supabase signup successful:', authData);
 
-      // Create user record in backend database
+      // Store session and access token
+      if (authData.session) {
+        await AsyncStorage.setItem('@access_token', authData.session.access_token);
+        await AsyncStorage.setItem('@refresh_token', authData.session.refresh_token);
+      }
+
+      // Create user record in backend database with access token
       if (authData.user) {
-        await this.createUserInBackend({
+        const backendResponse = await this.createUserInBackend({
           supabaseUserId: authData.user.id,
           email: authData.user.email,
           firstName,
           lastName,
           authType: 'email'
-        });
+        }, authData.session?.access_token);
+
+        console.log('Backend user creation response:', backendResponse);
       }
+
+      // Store user data temporarily for verification flow
+      await AsyncStorage.setItem('@temp_user_data', JSON.stringify({
+        email,
+        firstName,
+        lastName,
+        supabaseUserId: authData.user.id,
+        accessToken: authData.session?.access_token
+      }));
 
       return {
         user: authData.user,
         session: authData.session,
-        needsEmailVerification: !authData.session
+        needsEmailVerification: true
       };
     } catch (error) {
       console.error('Signup error:', error);
@@ -97,6 +118,13 @@ class AuthService {
       }
 
       console.log('Supabase login successful:', authData);
+
+      // Store session
+      await this.storeUserData({
+        id: authData.user.id,
+        email: authData.user.email,
+        ...authData.user.user_metadata
+      });
 
       // Get user profiles from backend
       const userProfiles = await this.getUserProfiles(authData.user.id);
@@ -200,45 +228,7 @@ class AuthService {
     }
   }
 
-  // Apple Authentication
-  async signInWithApple() {
-    try {
-      if (Platform.OS !== 'ios') {
-        throw new Error('Apple Sign-In is only available on iOS');
-      }
 
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
-
-      if (credential.identityToken) {
-        // Send the credential to your backend
-        const response = await axios.post(`${this.baseURL}/apple-auth`, {
-          identityToken: credential.identityToken,
-          authorizationCode: credential.authorizationCode,
-          fullName: credential.fullName,
-          email: credential.email
-        });
-
-        if (response.data.accessToken) {
-          await this.storeToken(response.data.accessToken);
-          await this.storeUserData(response.data.user);
-        }
-
-        return response.data;
-      }
-
-      throw new Error('No identity token received from Apple');
-    } catch (error) {
-      if (error.code === 'ERR_REQUEST_CANCELED') {
-        throw new Error('Apple Sign-In was cancelled');
-      }
-      throw new Error(error.response?.data?.message || error.message || 'Apple authentication failed');
-    }
-  }
 
   // Token and User Data Management
   async storeToken(token) {
@@ -269,6 +259,7 @@ class AuthService {
   async getUserData() {
     try {
       const userData = await AsyncStorage.getItem(this.userKey);
+      console.log('User data:', userData);
       return userData ? JSON.parse(userData) : null;
     } catch (error) {
       console.error('Error getting user data:', error);
@@ -342,6 +333,265 @@ class AuthService {
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Password reset failed');
+    }
+  }
+
+  // Verify email with code
+  async verifyEmailCode(email, code) {
+    try {
+      console.log('Verifying email code...');
+      const response = await axios.post(`${this.baseURL}/users/verify-email`, {
+        email,
+        code
+      });
+      console.log('Email verified:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Email verification error:', error);
+      throw new Error(error.response?.data?.message || 'Email verification failed');
+    }
+  }
+
+  // Resend verification code
+  async resendVerificationCode(email) {
+    try {
+      console.log('Resending verification code...');
+      const response = await axios.post(`${this.baseURL}/users/send-verification`, {
+        email
+      });
+      console.log('Verification code sent:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      throw new Error(error.response?.data?.message || 'Failed to resend code');
+    }
+  }
+
+  // Create profile after verification
+  async createProfile(supabaseUserId, firstName, lastName, role, avatarUrl = null) {
+    try {
+      console.log('Creating profile...');
+      const payload = {
+        supabaseUserId,
+        firstName,
+        lastName,
+        role
+      };
+      
+      // Only include avatarUrl if provided, otherwise backend will generate Gravatar
+      if (avatarUrl) {
+        payload.avatarUrl = avatarUrl;
+      }
+      
+      const response = await axios.post(`${this.baseURL}/profiles`, payload);
+      console.log('Profile created:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Profile creation error:', error);
+      throw new Error(error.response?.data?.message || 'Profile creation failed');
+    }
+  }
+
+  // Helper method to create user in backend database
+  async createUserInBackend(userData, accessToken = null) {
+    try {
+      console.log('Creating user in backend database:', userData);
+      
+      const headers = {};
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
+      
+      const response = await axios.post(`${this.baseURL}/users`, userData, { headers });
+      console.log('User created in backend:', response.data);
+      return response.data;
+    } catch (error) {
+      // If user already exists, that's okay - just log it
+      if (error.response?.status === 409) {
+        console.log('User already exists in backend');
+        return null;
+      }
+      console.error('Error creating user in backend:', error);
+      console.error('Error details:', error.response?.data);
+      // Don't throw error - user is already created in Supabase
+      return null;
+    }
+  }
+
+  // Helper method to get user profiles from backend
+  async getUserProfiles(supabaseUserId) {
+    try {
+      console.log('Fetching user profiles for:', supabaseUserId);
+      const response = await axios.get(`${this.baseURL}/users/${supabaseUserId}/profiles`);
+      console.log('User profiles fetched:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user profiles:', error);
+      // Return empty array if no profiles found
+      return [];
+    }
+  }
+
+  // ============================================
+  // AsyncStorage Session Management Methods
+  // ============================================
+
+  /**
+   * Store user data in AsyncStorage
+   * @param {Object} userData - User data to store
+   */
+  async storeUserData(userData) {
+    try {
+      await AsyncStorage.setItem(this.userKey, JSON.stringify(userData));
+      console.log('User data stored successfully');
+    } catch (error) {
+      console.error('Failed to store user data:', error);
+      throw new Error('Failed to save user data');
+    }
+  }
+
+  /**
+   * Get user data from AsyncStorage
+   * @returns {Object|null} User data or null
+   */
+  async getUserData() {
+    try {
+      const userData = await AsyncStorage.getItem(this.userKey);
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Store authentication token
+   * @param {string} token - JWT token
+   */
+  async storeToken(token) {
+    try {
+      await AsyncStorage.setItem(this.tokenKey, token);
+      console.log('Token stored successfully');
+    } catch (error) {
+      console.error('Failed to store token:', error);
+      throw new Error('Failed to save token');
+    }
+  }
+
+  /**
+   * Get authentication token
+   * @returns {string|null} Token or null
+   */
+  async getToken() {
+    try {
+      return await AsyncStorage.getItem(this.tokenKey);
+    } catch (error) {
+      console.error('Failed to fetch token:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Mark user as onboarded
+   */
+  async setOnboarded() {
+    try {
+      await AsyncStorage.setItem(this.onboardedKey, 'true');
+      console.log('User marked as onboarded');
+    } catch (error) {
+      console.error('Failed to set onboarded status:', error);
+    }
+  }
+
+  /**
+   * Check if user has completed onboarding
+   * @returns {boolean} True if onboarded
+   */
+  async isOnboarded() {
+    try {
+      const value = await AsyncStorage.getItem(this.onboardedKey);
+      return value === 'true';
+    } catch (error) {
+      console.error('Failed to check onboarded status:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Check if user is authenticated
+   * @returns {boolean} True if authenticated
+   */
+  async isAuthenticated() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      return !!session;
+    } catch (error) {
+      console.error('Error checking authentication:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get current Supabase session
+   * @returns {Object|null} Session object or null
+   */
+  async checkSession() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    } catch (error) {
+      console.error('Error checking session:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Clear all stored data (logout)
+   */
+  async clearStorage() {
+    try {
+      await AsyncStorage.multiRemove([
+        this.userKey,
+        this.tokenKey,
+        this.onboardedKey,
+        '@temp_user_data'
+      ]);
+      console.log('Storage cleared successfully');
+    } catch (error) {
+      console.error('Failed to clear storage:', error);
+      throw new Error('Failed to clear storage');
+    }
+  }
+
+  /**
+   * Logout user - clear storage and Supabase session
+   */
+  async logout() {
+    try {
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Clear local storage
+      await this.clearStorage();
+      
+      console.log('User logged out successfully');
+      return { success: true };
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw new Error('Failed to logout');
+    }
+  }
+
+  /**
+   * Get all stored keys (for debugging)
+   * @returns {Array} Array of storage keys
+   */
+  async getAllKeys() {
+    try {
+      return await AsyncStorage.getAllKeys();
+    } catch (error) {
+      console.error('Failed to get all keys:', error);
+      return [];
     }
   }
 }

@@ -11,14 +11,18 @@ import {
 } from "react-native";
 import authService from "../../services/authService";
 
-export default function RoleSelection({ navigation }) {
+export default function RoleSelection({ navigation, route }) {
     const [isLoading, setIsLoading] = useState(true);
     const [userData, setUserData] = useState(null);
     const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+    const [isCreatingProfile, setIsCreatingProfile] = useState(false);
     const [profileForm, setProfileForm] = useState({
         firstName: '',
         lastName: ''
     });
+    
+    // Get params from navigation (for new signups)
+    const { email, firstName, lastName, supabaseUserId, needsProfileCreation } = route?.params || {};
 
     useEffect(() => {
         checkAuthStatus();
@@ -27,8 +31,10 @@ export default function RoleSelection({ navigation }) {
     const checkAuthStatus = async () => {
         try {
             const isAuthenticated = await authService.isAuthenticated();
+            console.log('Is authenticated:', isAuthenticated);
             if (isAuthenticated) {
                 const user = await authService.getUserData();
+                console.log('User data:', user);
                 setUserData(user);
                 setProfileForm({
                     firstName: user?.firstName || '',
@@ -70,11 +76,49 @@ export default function RoleSelection({ navigation }) {
             setIsUpdatingProfile(false);
         }
     };
-    if (isLoading) {
+
+    const handleRoleSelection = async (role) => {
+        // If coming from verification flow, create profile first
+        if (needsProfileCreation && supabaseUserId) {
+            setIsCreatingProfile(true);
+            try {
+                // Create profile with Gravatar (no custom avatar)
+                await authService.createProfile(
+                    supabaseUserId,
+                    firstName || '',
+                    lastName || '',
+                    role
+                );
+
+                // Mark as onboarded
+                await authService.setOnboarded();
+
+                // Navigate to appropriate screen
+                if (role === 'user') {
+                    navigation.replace('HomeScreen');
+                } else {
+                    navigation.replace('HostHome');
+                }
+            } catch (error) {
+                Alert.alert('Error', error.message);
+                setIsCreatingProfile(false);
+            }
+        } else {
+            // Existing user, just navigate
+            if (role === 'user') {
+                navigation.replace('HomeScreen');
+            } else {
+                navigation.replace('HostHome');
+            }
+        }
+    };
+    if (isLoading || isCreatingProfile) {
         return (
             <View style={[styles.container, styles.loadingContainer]}>
                 <ActivityIndicator size="large" color="#2979FF" />
-                <Text style={styles.loadingText}>Loading...</Text>
+                <Text style={styles.loadingText}>
+                    {isCreatingProfile ? 'Creating your profile...' : 'Loading...'}
+                </Text>
             </View>
         );
     }
@@ -130,14 +174,14 @@ export default function RoleSelection({ navigation }) {
             <View style={styles.buttonRow}>
                 <TouchableOpacity
                     style={styles.optionButton}
-                    onPress={() => navigation.replace("HomeScreen")}
+                    onPress={() => handleRoleSelection('user')}
                 >
                     <Text style={styles.optionText}>User</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.optionButton}
-                    onPress={() => navigation.replace("HostHome")}
+                    onPress={() => handleRoleSelection('host')}
                 >
                     <Text style={styles.optionText}>Host</Text>
                 </TouchableOpacity>

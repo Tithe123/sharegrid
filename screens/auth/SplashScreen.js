@@ -41,9 +41,30 @@ export default function SplashScreen({ navigation }) {
       ]).start(async () => {
         // Check if user is already authenticated
         const isAuthenticated = await authService.isAuthenticated();
+        
         if (isAuthenticated) {
-          navigation.replace("Home");
+          // Check if user has completed onboarding
+          const isOnboarded = await authService.isOnboarded();
+          const session = await authService.checkSession();
+          
+          if (isOnboarded && session) {
+            // User is authenticated and onboarded, go to main app
+            const profiles = await authService.getUserProfiles(session.user.id);
+            
+            if (profiles && profiles.length > 0) {
+              // Navigate based on first profile role
+              const primaryRole = profiles[0].role;
+              navigation.replace(primaryRole === 'host' ? 'HostHome' : 'HomeScreen');
+            } else {
+              // No profiles, go to role selection
+              navigation.replace("Home");
+            }
+          } else {
+            // Authenticated but not onboarded
+            navigation.replace("Home");
+          }
         } else {
+          // Not authenticated, show onboarding
           navigation.replace("Onboarding");
         }
       });

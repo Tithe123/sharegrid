@@ -4,7 +4,7 @@ export const Colors = {
   primary: '#2563EB',           // Main primary color
   primaryLight: '#007AFF',      // Light primary variant
   primaryDark: '#1E63EE',       // Dark primary variant
-  primaryBlue: '#2979FF',       // Alternative primary blue
+  accentBlue: '#3C9AFB',
 
   // Background Colors
   background: '#FEFEFE',        // Main background color
@@ -38,6 +38,7 @@ export const Colors = {
   border: '#CCCCCC',            // Default border color
   borderLight: '#DDDDDD',       // Light border color
   borderDark: '#444444',        // Dark border color
+  borderSocial: '#E9EAEB',      // Social border color
   divider: '#E5E5E5',           // Divider color
 
   // Shadow Colors

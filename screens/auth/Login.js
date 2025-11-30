@@ -10,7 +10,7 @@ import {
     Easing,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { AntDesign } from "@expo/vector-icons";
+import { GoogleIcon } from '../common/svgs';
 import { Colors } from '../common';
 import authService from "../../services/authService";
 import ErrorModal from "../../components/errormodal";
@@ -49,10 +49,28 @@ export default function Login({ navigation }) {
         startLoadingAnimation();
 
         try {
-            await authService.login(formData.email, formData.password);
+            const result = await authService.login(formData.email, formData.password);
+            
+            // Check if user has profiles
+            const hasProfiles = result.profiles && result.profiles.length > 0;
+            
             stopLoadingAnimation();
             setIsLoading(false);
-            navigation.replace("Home");
+            
+            if (hasProfiles) {
+                // User has profiles, check if onboarded
+                const isOnboarded = await authService.isOnboarded();
+                if (isOnboarded) {
+                    // Navigate to main app
+                    navigation.replace("HomeScreen");
+                } else {
+                    // Show role selection
+                    navigation.replace("Home");
+                }
+            } else {
+                // New user, needs to select role
+                navigation.replace("Home");
+            }
         } catch (error) {
             stopLoadingAnimation();
             setIsLoading(false);
@@ -76,21 +94,6 @@ export default function Login({ navigation }) {
         }
     };
 
-    const handleAppleLogin = async () => {
-        setIsLoading(true);
-        startLoadingAnimation();
-
-        try {
-            await authService.signInWithApple();
-            stopLoadingAnimation();
-            setIsLoading(false);
-            navigation.replace("Home");
-        } catch (error) {
-            stopLoadingAnimation();
-            setIsLoading(false);
-            showError(error.message);
-        }
-    };
 
     const startLoadingAnimation = () => {
         Animated.loop(
@@ -194,7 +197,7 @@ export default function Login({ navigation }) {
                 style={styles.input}
                 keyboardType="email-address"
                 value={formData.email}
-                onChangeText={(text) => setFormData({...formData, email: text})}
+                onChangeText={(text) => setFormData({...formData, email: text.toLowerCase().trim()})}
             />
 
             <Text style={styles.label}>Password</Text>
@@ -265,7 +268,7 @@ export default function Login({ navigation }) {
                         </Animated.Text>
                     </View>
                 ) : (
-                    <Text style={styles.loginText}>•••</Text>
+                    <Text style={styles.loginText}>Login</Text>
                 )}
             </TouchableOpacity>
 
@@ -281,26 +284,16 @@ export default function Login({ navigation }) {
                 disabled={isLoading}
             >
                 <View style={styles.socialButtonContent}>
-                    <AntDesign name="google" size={20} />
+                    <GoogleIcon />
                     <Text style={styles.socialText}>Sign in with Google</Text>
                 </View>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-                style={[styles.socialButton, isLoading && styles.loginButtonDisabled]}
-                onPress={handleAppleLogin}
-                disabled={isLoading}
-            >
-                <View style={styles.socialButtonContent}>
-                    <Ionicons name="logo-apple" size={22} color="black" />
-                    <Text style={styles.socialText}>Sign in with Apple</Text>
-                </View>
-            </TouchableOpacity>
 
             <View style={styles.footer}>
                 <Text style={{ color: Colors.textPrimary }}>Don't have an account? </Text>
                 <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-                    <Text style={{ color: Colors.primaryBlue }}>Sign up</Text>
+                    <Text style={{ color: Colors.primary }}>Sign up</Text>
                 </TouchableOpacity>
             </View>
 
@@ -334,7 +327,7 @@ const styles = StyleSheet.create({
     },
     logoText: {
         fontSize: 24,
-        color: Colors.primaryBlue,
+        color: Colors.primary,
         fontWeight: "700",
     },
     title: {
@@ -374,11 +367,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
     },
     forgotText: {
-        color: Colors.primaryBlue,
+        color: Colors.accentBlue,
         fontSize: 13,
     },
     loginButton: {
-        backgroundColor: Colors.primaryBlue,
+        backgroundColor: Colors.primary,
         paddingVertical: 15,
         borderRadius: 8,
         alignItems: "center",
@@ -423,6 +416,8 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingVertical: 12,
         marginBottom: 15,
+        borderWidth: 1,
+        borderColor: Colors.borderSocial,
     },
     socialButtonContent: {
         flexDirection: "row",

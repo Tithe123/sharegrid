@@ -7,13 +7,14 @@ import SplashScreen from './screens/auth/SplashScreen';
 import Onboarding from './screens/auth/Onboarding';
 import Login from './screens/auth/Login';
 import Signup from './screens/auth/Signup';
-import EnhancedSignup from './screens/auth/EnhancedSignup';
 import ForgotPassword from './screens/auth/ForgotPassword';
-import Verify from './screens/auth/Verify';
+import VerifyEmail from './screens/auth/VerifyEmail';
 import CreateForgotPassword from './screens/auth/createForgotPassword';
 
+// Common screens
+import Home from './screens/common/Home';
+
 // User screens
-import Home from './screens/user/Home';
 import HomeScreen from './screens/user/HomeScreen';
 import NearbyWifi from './screens/user/NearbyWifi';
 import FundWalletOptionsScreen from './screens/user/FundWalletOptionsScreen';
@@ -37,9 +38,8 @@ export default function App() {
         <Stack.Screen name="Onboarding" component={Onboarding} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Signup" component={Signup} />
-        <Stack.Screen name="EnhancedSignup" component={EnhancedSignup} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-        <Stack.Screen name="Verify" component={Verify} />
+        <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
         <Stack.Screen name="createForgotPassword" component={CreateForgotPassword} />
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
