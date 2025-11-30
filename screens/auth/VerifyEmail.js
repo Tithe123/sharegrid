@@ -65,6 +65,20 @@ export default function VerifyEmail({ navigation, route }) {
             if (tempDataString) {
                 const tempData = JSON.parse(tempDataString);
                 
+                // Store user data in AsyncStorage for authenticated session
+                await authService.storeUserData({
+                    id: tempData.supabaseUserId,
+                    email: tempData.email,
+                    firstName: tempData.firstName,
+                    lastName: tempData.lastName,
+                    supabaseUserId: tempData.supabaseUserId
+                });
+
+                // Store access token if available
+                if (tempData.accessToken) {
+                    await authService.storeToken(tempData.accessToken);
+                }
+                
                 // Navigate to Home screen for profile selection
                 navigation.replace('Home', {
                     email: tempData.email,
@@ -97,7 +111,8 @@ export default function VerifyEmail({ navigation, route }) {
             setHasError(false);
             // Clear the code
             setCode("");
-            showError('Verification code sent successfully!');
+            // Show success message (using error modal for now, but it's a success message)
+            setErrorModal({ visible: true, message: 'Verification code sent successfully!' });
         } catch (error) {
             showError(error.message);
         } finally {
