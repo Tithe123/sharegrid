@@ -5,7 +5,7 @@ export default function EnvChecker() {
   const checkEnvVars = () => {
     const vars = {
       'EXPO_PUBLIC_SUPABASE_URL': process.env.EXPO_PUBLIC_SUPABASE_URL,
-      'EXPO_PUBLIC_SUPABASE_ANON_KEY': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+      'EXPO_PUBLIC_SUPABASE_KEY': process.env.EXPO_PUBLIC_SUPABASE_KEY,
       'EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID': process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
       'EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID': process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
       'EXPO_PUBLIC_APPLE_CLIENT_ID': process.env.EXPO_PUBLIC_APPLE_CLIENT_ID,
@@ -34,7 +34,7 @@ export default function EnvChecker() {
       <View style={styles.info}>
         <Text style={styles.infoTitle}>Expected Values:</Text>
         <Text style={styles.infoText}>• SUPABASE_URL should start with "https://"</Text>
-        <Text style={styles.infoText}>• SUPABASE_ANON_KEY should be a JWT token</Text>
+        <Text style={styles.infoText}>• SUPABASE_KEY should be a JWT token</Text>
         <Text style={styles.infoText}>• GOOGLE_IOS_CLIENT_ID should end with ".apps.googleusercontent.com"</Text>
         <Text style={styles.infoText}>• All variables should be defined (not undefined)</Text>
       </View>

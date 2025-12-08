@@ -8,7 +8,7 @@ import { AUTH_CONFIG } from '../config/auth.config';
 
 class AuthService {
   constructor() {
-    this.baseURL = 'http://localhost:3001/api'; // Backend API for user/profile management
+    this.baseURL = 'https://spikier-maura-fremd.ngrok-free.dev/api'; // Backend API for user/profile management
     this.tokenKey = '@sharegrid_token';
     this.userKey = '@sharegrid_user';
     this.onboardedKey = '@sharegrid_onboarded';
@@ -228,16 +228,6 @@ class AuthService {
     }
   }
 
-
-
-  // Token and User Data Management
-  async storeToken(token) {
-    try {
-      await AsyncStorage.setItem(this.tokenKey, token);
-    } catch (error) {
-      console.error('Error storing token:', error);
-    }
-  }
 
   async getToken() {
     try {
@@ -579,6 +569,144 @@ class AuthService {
     } catch (error) {
       console.error('Logout error:', error);
       throw new Error('Failed to logout');
+    }
+  }
+
+  /**
+   * Send password reset email
+   * @param {string} email - User's email address
+   * @returns {Object} Success response
+   */
+  async forgotPassword(email) {
+    try {
+      console.log('Sending password reset email to:', email);
+      
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'sharegrid://reset-password', // Deep link for mobile app
+      });
+
+      if (error) {
+        console.error('Forgot password error:', error);
+        throw new Error(error.message);
+      }
+
+      console.log('Password reset email sent successfully');
+      return { 
+        success: true, 
+        message: 'Password reset email sent successfully' 
+      };
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      throw new Error(error.message || 'Failed to send password reset email');
+    }
+  }
+
+  /**
+   * Reset password with new password
+   * @param {string} newPassword - New password
+   * @returns {Object} Success response
+   */
+  async resetPassword(newPassword) {
+    try {
+      console.log('Resetting password...');
+      
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        console.error('Reset password error:', error);
+        throw new Error(error.message);
+      }
+
+      console.log('Password reset successfully');
+      return { 
+        success: true, 
+        message: 'Password reset successfully',
+        user: data.user 
+      };
+    } catch (error) {
+      console.error('Reset password error:', error);
+      throw new Error(error.message || 'Failed to reset password');
+    }
+  }
+
+  /**
+   * Verify reset password token and set session
+   * @param {string} accessToken - Access token from reset link
+   * @param {string} refreshToken - Refresh token from reset link
+   * @returns {Object} Session data
+   */
+  async verifyResetToken(accessToken, refreshToken) {
+    try {
+      console.log('Verifying reset password token...');
+      
+      const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+
+      if (error) {
+        console.error('Token verification error:', error);
+        throw new Error(error.message);
+      }
+
+      console.log('Reset token verified successfully');
+      return { 
+        success: true, 
+        session: data.session,
+        user: data.user 
+      };
+    } catch (error) {
+      console.error('Token verification error:', error);
+      throw new Error(error.message || 'Invalid or expired reset token');
+    }
+  }
+
+  /**
+   * Change password for authenticated user
+   * @param {string} currentPassword - Current password
+   * @param {string} newPassword - New password
+   * @returns {Object} Success response
+   */
+  async changePassword(currentPassword, newPassword) {
+    try {
+      console.log('Changing password...');
+      
+      // First verify current password by attempting to sign in
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User not authenticated');
+      }
+
+      // Re-authenticate with current password
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: session.user.email,
+        password: currentPassword
+      });
+
+      if (signInError) {
+        throw new Error('Current password is incorrect');
+      }
+
+      // Update password
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        console.error('Change password error:', error);
+        throw new Error(error.message);
+      }
+
+      console.log('Password changed successfully');
+      return { 
+        success: true, 
+        message: 'Password changed successfully' 
+      };
+    } catch (error) {
+      console.error('Change password error:', error);
+      throw new Error(error.message || 'Failed to change password');
     }
   }
 

@@ -20,28 +20,28 @@ export default function Onboarding({ navigation }) {
     const onboardingData = [
         {
             id: 1,
-            image: require("../../assets/illustration 1.png"),
+            image: require("../../assets/illustration1.png"),
             title: "Welcome to ShareGrid",
             text: "Share internet, earn token and connect everywhere",
             dotColor: "#2563EB",
         },
         {
             id: 2,
-            image: require("../../assets/Frame (3).png"),
+            image: require("../../assets/frame3.png"),
             title: "Accessible internet",
             text: "Access affordable internet anywhere",
             dotColor: "#2563EB",
         },
         {
             id: 3,
-            image: require("../../assets/Frame (2).png"),
+            image: require("../../assets/frame2.png"),
             title: "Fully Decentralized",
             text: "Blockchain-verified connection",
             dotColor: "#2563EB",
         },
         {
             id: 4,
-            image: require("../../assets/Frame (1).png"),
+            image: require("../../assets/frame1.png"),
             title: "Earn Rewards",
             text: "Share your Internet and get rewarded",
             dotColor: "#2563EB",

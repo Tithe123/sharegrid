@@ -5,16 +5,54 @@ import {
     StyleSheet,
     TouchableOpacity,
     TextInput,
+    ActivityIndicator,
+    Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import authService from "../../services/authService";
+import { Colors } from "../common";
 
 export default function ForgotPassword({ navigation }) {
     const [email, setEmail] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [emailSent, setEmailSent] = useState(false);
 
-    const handleReset = () => {
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
 
-        console.log("Reset link sent to:", email);
-        navigation.goBack();
+    const handleReset = async () => {
+        if (!email.trim()) {
+            Alert.alert("Error", "Please enter your email address");
+            return;
+        }
+
+        if (!validateEmail(email)) {
+            Alert.alert("Error", "Please enter a valid email address");
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await authService.forgotPassword(email);
+            setEmailSent(true);
+            Alert.alert(
+                "Email Sent", 
+                "Password reset instructions have been sent to your email address. Please check your inbox and follow the instructions to reset your password.",
+                [
+                    {
+                        text: "OK",
+                        onPress: () => navigation.goBack()
+                    }
+                ]
+            );
+        } catch (error) {
+            console.error("Forgot password error:", error);
+            Alert.alert("Error", error.message || "Failed to send reset email. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -50,8 +88,16 @@ export default function ForgotPassword({ navigation }) {
 
 
             <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-                    <Text style={styles.resetText}>Reset Password</Text>
+                <TouchableOpacity 
+                    style={[styles.resetButton, isLoading && styles.resetButtonDisabled]} 
+                    onPress={handleReset}
+                    disabled={isLoading}
+                >
+                    {isLoading ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                        <Text style={styles.resetText}>Reset Password</Text>
+                    )}
                 </TouchableOpacity>
             </View>
         </View>
@@ -108,10 +154,14 @@ const styles = StyleSheet.create({
         marginBottom: 40,
     },
     resetButton: {
-        backgroundColor: "#2979FF",
+        backgroundColor: Colors.primary,
         paddingVertical: 15,
         borderRadius: 8,
         alignItems: "center",
+    },
+    resetButtonDisabled: {
+        backgroundColor: Colors.textTertiary,
+        opacity: 0.6,
     },
     resetText: {
         color: "#fff",

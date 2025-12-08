@@ -8,7 +8,7 @@ console.log('GOOGLE_ANDROID_CLIENT_ID:', process.env.EXPO_PUBLIC_GOOGLE_ANDROID_
 export const AUTH_CONFIG = {
   // Supabase Configuration
   SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co',
-  SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'your-supabase-anon-key-here',
+  SUPABASE_KEY: process.env.EXPO_PUBLIC_SUPABASE_KEY || 'your-supabase-anon-key-here',
 
   // Google OAuth Configuration
   GOOGLE_IOS_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '244470367906-u8ci3be2l01s5qefahblssd8cisn0mj9.apps.googleusercontent.com',

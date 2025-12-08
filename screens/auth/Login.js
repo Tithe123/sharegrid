@@ -13,7 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { GoogleIcon } from '../common/svgs';
 import { Colors } from '../common';
 import authService from "../../services/authService";
-import ErrorModal from "../../components/errormodal";
+import ErrorModal from "../../components/authErrormodal";
 
 export default function Login({ navigation }) {
     const [secureText, setSecureText] = useState(true);
@@ -22,9 +22,10 @@ export default function Login({ navigation }) {
         email: '',
         password: ''
     });
-    const [errorModal, setErrorModal] = useState({
+    const [modal, setModal] = useState({
         visible: false,
-        message: ''
+        message: '',
+        type: 'error' // 'error' | 'success' | 'info'
     });
 
     const dotAnimation1 = useRef(new Animated.Value(0)).current;
@@ -32,11 +33,19 @@ export default function Login({ navigation }) {
     const dotAnimation3 = useRef(new Animated.Value(0)).current;
 
     const showError = (message) => {
-        setErrorModal({ visible: true, message });
+        setModal({ visible: true, message, type: 'error' });
     };
 
-    const hideError = () => {
-        setErrorModal({ visible: false, message: '' });
+    const showSuccess = (message) => {
+        setModal({ visible: true, message, type: 'success' });
+    };
+
+    const showInfo = (message) => {
+        setModal({ visible: true, message, type: 'info' });
+    };
+
+    const hideModal = () => {
+        setModal({ visible: false, message: '', type: 'error' });
     };
 
     const handleLogin = async () => {
@@ -289,6 +298,12 @@ export default function Login({ navigation }) {
                 </View>
             </TouchableOpacity>
 
+            <TouchableOpacity 
+                style={styles.forgotPasswordContainer}
+                onPress={() => navigation.navigate("ForgotPassword")}
+            >
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
 
             <View style={styles.footer}>
                 <Text style={{ color: Colors.textPrimary }}>Don't have an account? </Text>
@@ -298,9 +313,10 @@ export default function Login({ navigation }) {
             </View>
 
             <ErrorModal
-                visible={errorModal.visible}
-                message={errorModal.message}
-                onClose={hideError}
+                visible={modal.visible}
+                message={modal.message}
+                type={modal.type}
+                onClose={hideModal}
             />
         </View>
     );
@@ -428,6 +444,16 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: Colors.textLight,
         marginLeft: 10,
+        fontWeight: "500",
+    },
+    forgotPasswordContainer: {
+        alignItems: "center",
+        marginTop: 20,
+        marginBottom: 10,
+    },
+    forgotPasswordText: {
+        color: Colors.primary,
+        fontSize: 16,
         fontWeight: "500",
     },
     footer: {

@@ -10,7 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { VerificationCodeInput } from 'react-native-verification-code-input';
 import { Colors } from '../common';
 import authService from "../../services/authService";
-import ErrorModal from "../../components/errormodal";
+import ErrorModal from "../../components/authErrormodal";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function VerifyEmail({ navigation, route }) {
@@ -21,9 +21,10 @@ export default function VerifyEmail({ navigation, route }) {
     const [hasError, setHasError] = useState(false);
     const [countdown, setCountdown] = useState(60); // Start with 60 seconds
     const [canResend, setCanResend] = useState(false); // Initially disabled
-    const [errorModal, setErrorModal] = useState({
+    const [modal, setModal] = useState({
         visible: false,
-        message: ''
+        message: '',
+        type: 'error' // 'error' | 'success' | 'info'
     });
 
     // Timer effect - runs every second
@@ -39,12 +40,17 @@ export default function VerifyEmail({ navigation, route }) {
     }, [countdown]);
 
     const showError = (message) => {
-        setErrorModal({ visible: true, message });
+        setModal({ visible: true, message, type: 'error' });
         setHasError(true);
     };
 
-    const hideError = () => {
-        setErrorModal({ visible: false, message: '' });
+    const showSuccess = (message) => {
+        setModal({ visible: true, message, type: 'success' });
+        setHasError(false);
+    };
+
+    const hideModal = () => {
+        setModal({ visible: false, message: '', type: 'error' });
         setHasError(false);
     };
 
@@ -111,8 +117,8 @@ export default function VerifyEmail({ navigation, route }) {
             setHasError(false);
             // Clear the code
             setCode("");
-            // Show success message (using error modal for now, but it's a success message)
-            setErrorModal({ visible: true, message: 'Verification code sent successfully!' });
+            // Show success message
+            showSuccess('Verification code sent successfully!');
         } catch (error) {
             showError(error.message);
         } finally {
@@ -186,9 +192,10 @@ export default function VerifyEmail({ navigation, route }) {
             )}
 
             <ErrorModal
-                visible={errorModal.visible}
-                message={errorModal.message}
-                onClose={hideError}
+                visible={modal.visible}
+                message={modal.message}
+                type={modal.type}
+                onClose={hideModal}
             />
         </View>
     );
