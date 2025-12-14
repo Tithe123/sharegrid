@@ -8,9 +8,10 @@ import { AUTH_CONFIG } from '../config/auth.config';
 
 class AuthService {
   constructor() {
-    this.baseURL = 'https://spikier-maura-fremd.ngrok-free.dev/api'; // Backend API for user/profile management
+    this.baseURL = 'http://localhost:3001/api'; // Backend API for user/profile management
     this.tokenKey = '@sharegrid_token';
     this.userKey = '@sharegrid_user';
+    this.profileKey = '@sharegrid_profile'; // Separate key for profile data
     this.onboardedKey = '@sharegrid_onboarded';
     
     // Configure Google Sign-In with platform-specific client ID
@@ -119,15 +120,32 @@ class AuthService {
 
       console.log('Supabase login successful:', authData);
 
-      // Store session
+      // Fetch user data from backend database to get auth_type and other fields
+      let backendUser = null;
+      try {
+        const response = await axios.get(`${this.baseURL}/users/${authData.user.id}`);
+        backendUser = response.data.data;
+        console.log('Backend user data fetched:', backendUser);
+      } catch (error) {
+        console.error('Error fetching backend user data:', error);
+      }
+
+      // Store complete user data including auth_type from backend
       await this.storeUserData({
         id: authData.user.id,
+        supabaseUserId: authData.user.id,
         email: authData.user.email,
-        ...authData.user.user_metadata
+        authType: backendUser?.auth_type || 'email',
+        firstName: authData.user.user_metadata?.first_name || null,
+        lastName: authData.user.user_metadata?.last_name || null,
+        isEmailVerified: backendUser?.is_email_verified || false
       });
 
-      // Get user profiles from backend
+      // Get user profiles from backend and store them
       const userProfiles = await this.getUserProfiles(authData.user.id);
+      if (userProfiles && userProfiles.length > 0) {
+        await this.storeProfiles(userProfiles);
+      }
 
       return {
         user: authData.user,
@@ -147,15 +165,31 @@ class AuthService {
         code
       });
       
-      if (response.data.accessToken) {
-        await this.storeToken(response.data.accessToken);
-        if (response.data.user) {
-          await this.storeUserData(response.data.user);
-        }
+      console.log('Email verification response:', response.data);
+      
+      // Get current Supabase session to fetch user metadata
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (response.data.success && response.data.data) {
+        const backendUser = response.data.data;
+        
+        // Store complete user data with authType set to 'email'
+        await this.storeUserData({
+          id: backendUser.supabase_user_id,
+          supabaseUserId: backendUser.supabase_user_id,
+          email: backendUser.email,
+          authType: 'email', // Explicitly set to 'email' for email verification flow
+          firstName: session?.user?.user_metadata?.first_name || null,
+          lastName: session?.user?.user_metadata?.last_name || null,
+          isEmailVerified: backendUser.is_email_verified || true
+        });
+        
+        console.log('User data stored after email verification');
       }
       
       return response.data;
     } catch (error) {
+      console.error('Email verification error:', error);
       throw new Error(error.response?.data?.message || 'Email verification failed');
     }
   }
@@ -202,8 +236,33 @@ class AuthService {
           });
         }
 
-        // Get user profiles from backend
+        // Fetch user data from backend database to get auth_type and other fields
+        let backendUser = null;
+        try {
+          const response = await axios.get(`${this.baseURL}/users/${authData.user.id}`);
+          backendUser = response.data.data;
+          console.log('Backend user data fetched:', backendUser);
+        } catch (error) {
+          console.error('Error fetching backend user data:', error);
+        }
+
+        // Store complete user data including auth_type from backend
+        await this.storeUserData({
+          id: authData.user.id,
+          supabaseUserId: authData.user.id,
+          email: authData.user.email,
+          authType: backendUser?.auth_type || 'google',
+          firstName: authData.user.user_metadata?.first_name || authData.user.user_metadata?.full_name?.split(' ')[0] || null,
+          lastName: authData.user.user_metadata?.last_name || authData.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null,
+          isEmailVerified: backendUser?.is_email_verified || true, // Google users are auto-verified
+          avatarUrl: authData.user.user_metadata?.avatar_url || null
+        });
+
+        // Get user profiles from backend and store them
         const userProfiles = await this.getUserProfiles(authData.user.id);
+        if (userProfiles && userProfiles.length > 0) {
+          await this.storeProfiles(userProfiles);
+        }
 
         return {
           user: authData.user,
@@ -229,61 +288,25 @@ class AuthService {
   }
 
 
-  async getToken() {
-    try {
-      return await AsyncStorage.getItem(this.tokenKey);
-    } catch (error) {
-      console.error('Error getting token:', error);
-      return null;
-    }
-  }
-
-  async storeUserData(userData) {
-    try {
-      await AsyncStorage.setItem(this.userKey, JSON.stringify(userData));
-    } catch (error) {
-      console.error('Error storing user data:', error);
-    }
-  }
-
-  async getUserData() {
-    try {
-      const userData = await AsyncStorage.getItem(this.userKey);
-      console.log('User data:', userData);
-      return userData ? JSON.parse(userData) : null;
-    } catch (error) {
-      console.error('Error getting user data:', error);
-      return null;
-    }
-  }
-
-  async logout() {
-    try {
-      await AsyncStorage.multiRemove([this.tokenKey, this.userKey]);
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
-  }
-
-  async isAuthenticated() {
-    const token = await this.getToken();
-    return !!token;
-  }
-
-  // Get current user
-  async getCurrentUser() {
-    return await this.getUserData();
-  }
 
   // Update user profile
   async updateUserProfile(updates) {
     try {
-      const token = await this.getToken();
-      const response = await axios.put(`${this.baseURL}/profile`, updates, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      console.log('Updating user profile with:', updates);
+      
+      // Update Supabase user metadata
+      const { data: authData, error: authError } = await supabase.auth.updateUser({
+        data: {
+          first_name: updates.first_name,
+          last_name: updates.last_name
         }
       });
+
+      if (authError) {
+        throw new Error(authError.message);
+      }
+
+      console.log('Supabase user metadata updated:', authData);
 
       // Update local storage
       const userData = await this.getUserData();
@@ -294,37 +317,16 @@ class AuthService {
           lastName: updates.last_name || userData.lastName,
         };
         await this.storeUserData(updatedUserData);
+        console.log('Local user data updated:', updatedUserData);
       }
 
-      return response.data.user;
+      return authData.user;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to update profile');
+      console.error('Update profile error:', error);
+      throw new Error(error.message || 'Failed to update profile');
     }
   }
 
-  // Forgot Password
-  async forgotPassword(email) {
-    try {
-      const response = await axios.post(`${this.baseURL}/forgot-password`, {
-        email
-      });
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Forgot password request failed');
-    }
-  }
-
-  // Reset Password
-  async resetPassword(token, newPassword) {
-    try {
-      const response = await axios.post(`${this.baseURL}/reset-password?token=${token}`, {
-        newPassword
-      });
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Password reset failed');
-    }
-  }
 
   // Verify email with code
   async verifyEmailCode(email, code) {
@@ -335,6 +337,27 @@ class AuthService {
         code
       });
       console.log('Email verified:', response.data);
+      
+      // Get current Supabase session to fetch user metadata
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (response.data.success && response.data.data) {
+        const backendUser = response.data.data;
+        
+        // Store complete user data with authType set to 'email'
+        await this.storeUserData({
+          id: backendUser.supabase_user_id,
+          supabaseUserId: backendUser.supabase_user_id,
+          email: backendUser.email,
+          authType: 'email', // Explicitly set to 'email' for email verification flow
+          firstName: session?.user?.user_metadata?.first_name || null,
+          lastName: session?.user?.user_metadata?.last_name || null,
+          isEmailVerified: backendUser.is_email_verified || true
+        });
+        
+        console.log('User data stored after email verification with authType: email');
+      }
+      
       return response.data;
     } catch (error) {
       console.error('Email verification error:', error);
@@ -375,10 +398,48 @@ class AuthService {
       
       const response = await axios.post(`${this.baseURL}/profiles`, payload);
       console.log('Profile created:', response.data);
+      
+      // Sync profiles with storage after creating new profile
+      const userProfiles = await this.getUserProfiles(supabaseUserId);
+      if (userProfiles && userProfiles.length > 0) {
+        await this.storeProfiles(userProfiles);
+        console.log('Profiles synced to storage after creation');
+      }
+      
       return response.data;
     } catch (error) {
       console.error('Profile creation error:', error);
       throw new Error(error.response?.data?.message || 'Profile creation failed');
+    }
+  }
+
+  // Update existing profile
+  async updateProfile(profileId, updates) {
+    try {
+      console.log('Updating profile:', profileId, updates);
+      
+      const payload = {};
+      if (updates.firstName) payload.firstName = updates.firstName;
+      if (updates.lastName) payload.lastName = updates.lastName;
+      if (updates.avatarUrl) payload.avatarUrl = updates.avatarUrl;
+      
+      const response = await axios.put(`${this.baseURL}/profiles/${profileId}`, payload);
+      console.log('Profile updated:', response.data);
+      
+      // Sync profiles with storage after updating
+      const userData = await this.getUserData();
+      if (userData?.supabaseUserId) {
+        const userProfiles = await this.getUserProfiles(userData.supabaseUserId);
+        if (userProfiles && userProfiles.length > 0) {
+          await this.storeProfiles(userProfiles);
+          console.log('Profiles synced to storage after update');
+        }
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      throw new Error(error.response?.data?.message || 'Profile update failed');
     }
   }
 
@@ -455,6 +516,34 @@ class AuthService {
   }
 
   /**
+   * Store user profiles in AsyncStorage
+   * @param {Array} profiles - Array of user profiles
+   */
+  async storeProfiles(profiles) {
+    try {
+      await AsyncStorage.setItem(this.profileKey, JSON.stringify(profiles));
+      console.log('Profiles stored successfully:', profiles.length);
+    } catch (error) {
+      console.error('Failed to store profiles:', error);
+      throw new Error('Failed to save profiles');
+    }
+  }
+
+  /**
+   * Get user profiles from AsyncStorage
+   * @returns {Array} Array of profiles or empty array
+   */
+  async getProfiles() {
+    try {
+      const profiles = await AsyncStorage.getItem(this.profileKey);
+      return profiles ? JSON.parse(profiles) : [];
+    } catch (error) {
+      console.error('Failed to fetch profiles:', error);
+      return [];
+    }
+  }
+
+  /**
    * Store authentication token
    * @param {string} token - JWT token
    */
@@ -509,16 +598,29 @@ class AuthService {
 
   /**
    * Check if user is authenticated
-   * @returns {boolean} True if authenticated
+   * @returns {boolean} True if authenticated (session exists and user is in database)
    */
   async isAuthenticated() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      return !!session;
+      if (!session) {
+        return false;
+      }
+      
+      const userData = await this.getUserData();
+      return !!userData;
     } catch (error) {
       console.error('Error checking authentication:', error);
       return false;
     }
+  }
+
+  /**
+   * Get current user (alias for getUserData)
+   * @returns {Object|null} User data or null
+   */
+  async getCurrentUser() {
+    return await this.getUserData();
   }
 
   /**
@@ -542,9 +644,12 @@ class AuthService {
     try {
       await AsyncStorage.multiRemove([
         this.userKey,
+        this.profileKey,
         this.tokenKey,
         this.onboardedKey,
-        '@temp_user_data'
+        '@temp_user_data',
+        '@access_token',
+        '@refresh_token'
       ]);
       console.log('Storage cleared successfully');
     } catch (error) {

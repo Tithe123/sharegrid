@@ -63,27 +63,13 @@ export default function VerifyEmail({ navigation, route }) {
         setIsLoading(true);
         setHasError(false);
         try {
-            // Verify email with backend
+            // Verify email with backend (this now stores user data with authType: 'email')
             await authService.verifyEmailCode(email, verificationCode);
 
-            // Get temp user data
+            // Get temp user data for navigation params
             const tempDataString = await AsyncStorage.getItem('@temp_user_data');
             if (tempDataString) {
                 const tempData = JSON.parse(tempDataString);
-                
-                // Store user data in AsyncStorage for authenticated session
-                await authService.storeUserData({
-                    id: tempData.supabaseUserId,
-                    email: tempData.email,
-                    firstName: tempData.firstName,
-                    lastName: tempData.lastName,
-                    supabaseUserId: tempData.supabaseUserId
-                });
-
-                // Store access token if available
-                if (tempData.accessToken) {
-                    await authService.storeToken(tempData.accessToken);
-                }
                 
                 // Navigate to Home screen for profile selection
                 navigation.replace('Home', {
