@@ -55,11 +55,25 @@ export default function RoleSelection({ navigation, route }) {
         
         setIsCreatingProfile(true);
         try {
-            // Get current user data
+            // Get current user data from multiple sources
             const currentUser = userData || await authService.getUserData();
-            const userSupabaseId = supabaseUserId || currentUser?.supabaseUserId;
+            const userSupabaseId = supabaseUserId || currentUser?.supabaseUserId || currentUser?.id;
             let userFirstName = profileForm.firstName.trim() || firstName || currentUser?.firstName || '';
             let userLastName = profileForm.lastName.trim() || lastName || currentUser?.lastName || '';
+
+            console.log('Creating profile with:', {
+                userSupabaseId,
+                userFirstName,
+                userLastName,
+                selectedRole,
+                fromRouteParams: !!supabaseUserId,
+                fromUserData: !!currentUser?.supabaseUserId
+            });
+
+            // Validate we have a supabaseUserId
+            if (!userSupabaseId) {
+                throw new Error('Unable to identify user. Please try logging in again.');
+            }
 
             // Update user metadata first if needed
             if ((!currentUser?.firstName || !currentUser?.lastName) && (userFirstName && userLastName)) {
@@ -85,6 +99,7 @@ export default function RoleSelection({ navigation, route }) {
                 navigation.replace('HostHome');
             }
         } catch (error) {
+            console.error('Profile creation failed:', error);
             Alert.alert('Error', error.message);
             setIsCreatingProfile(false);
         }

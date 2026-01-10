@@ -68,21 +68,35 @@ export default function VerifyEmail({ navigation, route }) {
 
             // Get temp user data for navigation params
             const tempDataString = await AsyncStorage.getItem('@temp_user_data');
+            let navParams = { needsProfileCreation: true };
+            
             if (tempDataString) {
                 const tempData = JSON.parse(tempDataString);
-                
-                // Navigate to Home screen for profile selection
-                navigation.replace('Home', {
+                navParams = {
                     email: tempData.email,
                     firstName: tempData.firstName,
                     lastName: tempData.lastName,
                     supabaseUserId: tempData.supabaseUserId,
                     needsProfileCreation: true
-                });
-
+                };
                 // Clear temp data
                 await AsyncStorage.removeItem('@temp_user_data');
+            } else {
+                // Fallback: get user data from storage (set by verifyEmailCode)
+                const userData = await authService.getUserData();
+                if (userData) {
+                    navParams = {
+                        email: userData.email,
+                        firstName: userData.firstName,
+                        lastName: userData.lastName,
+                        supabaseUserId: userData.supabaseUserId || userData.id,
+                        needsProfileCreation: true
+                    };
+                }
             }
+            
+            console.log('Navigating to Home with params:', navParams);
+            navigation.replace('Home', navParams);
         } catch (error) {
             showError(error.message);
             // Reset code on error

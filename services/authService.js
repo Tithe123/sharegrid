@@ -383,7 +383,19 @@ class AuthService {
   // Create profile after verification
   async createProfile(supabaseUserId, firstName, lastName, role, avatarUrl = null) {
     try {
-      console.log('Creating profile...');
+      console.log('Creating profile with params:', { supabaseUserId, firstName, lastName, role, avatarUrl });
+      
+      // Validate required fields
+      if (!supabaseUserId) {
+        throw new Error('Missing supabaseUserId - user may not be properly authenticated');
+      }
+      if (!firstName || !lastName) {
+        throw new Error('First name and last name are required');
+      }
+      if (!role || !['user', 'host'].includes(role)) {
+        throw new Error('Invalid role - must be "user" or "host"');
+      }
+      
       const payload = {
         supabaseUserId,
         firstName,
@@ -396,8 +408,9 @@ class AuthService {
         payload.avatarUrl = avatarUrl;
       }
       
+      console.log('Sending profile creation request to:', `${this.baseURL}/profiles`);
       const response = await axios.post(`${this.baseURL}/profiles`, payload);
-      console.log('Profile created:', response.data);
+      console.log('Profile created successfully:', response.data);
       
       // Sync profiles with storage after creating new profile
       const userProfiles = await this.getUserProfiles(supabaseUserId);
@@ -409,7 +422,9 @@ class AuthService {
       return response.data;
     } catch (error) {
       console.error('Profile creation error:', error);
-      throw new Error(error.response?.data?.message || 'Profile creation failed');
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      throw new Error(error.response?.data?.message || error.message || 'Profile creation failed');
     }
   }
 
@@ -475,7 +490,8 @@ class AuthService {
       console.log('Fetching user profiles for:', supabaseUserId);
       const response = await axios.get(`${this.baseURL}/users/${supabaseUserId}/profiles`);
       console.log('User profiles fetched:', response.data);
-      return response.data;
+      // Backend returns { success: true, data: profiles }, extract the data array
+      return response.data?.data || [];
     } catch (error) {
       console.error('Error fetching user profiles:', error);
       // Return empty array if no profiles found
