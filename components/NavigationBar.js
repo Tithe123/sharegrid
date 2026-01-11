@@ -10,9 +10,9 @@ const NavigationBar = ({ isWifiConnected, onWifiPress }) => {
   const [hoveredTab, setHoveredTab] = useState(null);
 
   const tabs = [
-    { name: "Home", icon: "home-outline", label: "Home" },
+    { name: "HomeScreen", icon: "home-outline", label: "HomeScreen" },
     { name: "Rewards", icon: "gift-outline", label: "Rewards" },
-    { name: "Connect", icon: "wifi-outline", label: "" },
+    { name: "Connect", icon: "wifi-outline", label: "Connect" },
     { name: "Activities", icon: "list-outline", label: "Activities" },
     { name: "Profile", icon: "person-outline", label: "Profile" },
   ];

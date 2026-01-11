@@ -34,6 +34,12 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.244470367906-u8ci3be2l01s5qefahblssd8cisn0mj9"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow ShareGrid to use your location."
+        }
       ]
     ]
   }
