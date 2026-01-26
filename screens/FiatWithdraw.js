@@ -64,7 +64,7 @@ export default function BankWithdrawalScreen() {
 
     const handleProceed = () => {
     
-        openModal(setShowFailedModal);
+        openModal(setShowSuccessModal);
     };
 
     return (
