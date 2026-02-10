@@ -1,6 +1,9 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, Pressable, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+
+const PRIMARY_BLUE = "#2563EB";
+const PRIMARY_BLUE_PRESSED = "#3B82F6";
 
 export default function DepositCryptoScreen() {
   const walletAddress = "0xde43tegydfyjiuk-fudkj63bdkvjgbgstfavsbjfgh";
@@ -41,13 +44,25 @@ export default function DepositCryptoScreen() {
 
 
         <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.copyBox} onPress={copyToClipboard}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.copyBox,
+              pressed && styles.copyBoxPressed,
+            ]}
+            onPress={copyToClipboard}
+          >
             <Text style={styles.copyText}>Copy</Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity style={styles.downloadBtn} onPress={downloadQR}>
-            <Ionicons name="download-outline" size={22} color="#0056D2" />
-          </TouchableOpacity>
+          <Pressable
+            style={({ pressed }) => [
+              styles.downloadBtn,
+              pressed && styles.downloadBtnPressed,
+            ]}
+            onPress={downloadQR}
+          >
+            <Ionicons name="download-outline" size={22} color={PRIMARY_BLUE} />
+          </Pressable>
         </View>
       </View>
     </View>
@@ -107,11 +122,15 @@ const styles = StyleSheet.create({
   },
   copyBox: {
     borderWidth: 1.5,
-    backgroundColor: "#0056D2",
-    borderColor: "#0056D2",
+    backgroundColor: PRIMARY_BLUE,
+    borderColor: PRIMARY_BLUE,
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 30,
+  },
+  copyBoxPressed: {
+    backgroundColor: PRIMARY_BLUE_PRESSED,
+    borderColor: PRIMARY_BLUE_PRESSED,
   },
   copyText: {
     color: "#fff",
@@ -119,9 +138,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   downloadBtn: {
-    backgroundColor: "#E9F0FF",
+    backgroundColor: "#DBEAFE",
     borderRadius: 50,
-    color: "#0056D2",
+    color: PRIMARY_BLUE,
     padding: 12,
+  },
+  downloadBtnPressed: {
+    backgroundColor: "#BFDBFE",
   },
 });

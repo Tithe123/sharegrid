@@ -3,10 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
+  Pressable,
   TouchableOpacity,
   TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+
+const PRIMARY_BLUE = "#2563EB";
+const PRIMARY_BLUE_PRESSED = "#3B82F6";
 
 export default function FundWalletScreen() {
   const [method, setMethod] = useState("card");
@@ -38,7 +42,7 @@ export default function FundWalletScreen() {
             <View
               style={[
                 styles.dotContainer,
-                { borderColor: method === type ? "#fff" : "#0056D2" },
+                { borderColor: method === type ? "#fff" : PRIMARY_BLUE },
               ]}
             >
               {method === type && <View style={styles.dot} />}
@@ -76,19 +80,29 @@ export default function FundWalletScreen() {
             </View>
           </View>
           <View style={styles.checkboxContainer}>
-            <Ionicons name="checkbox-outline" size={22} color="#0056D2" />
+            <Ionicons name="checkbox-outline" size={22} color={PRIMARY_BLUE} />
             <Text style={styles.checkboxText}>
               Save card securely for future payments
             </Text>
           </View>
 
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.cancelBtn}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.cancelBtn,
+                pressed && styles.cancelBtnPressed,
+              ]}
+            >
               <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.submitBtn}>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.submitBtn,
+                pressed && styles.submitBtnPressed,
+              ]}
+            >
               <Text style={styles.submitText}>Add Card</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </>
       )}
@@ -101,7 +115,7 @@ export default function FundWalletScreen() {
               <Text style={styles.bankValue}>ShareGrid Technologies</Text>
             </View>
             <TouchableOpacity onPress={() => handleCopy("ShareGrid Technologies")}>
-              <Ionicons name="copy-outline" size={22} color="#0056D2" />
+              <Ionicons name="copy-outline" size={22} color={PRIMARY_BLUE} />
             </TouchableOpacity>
           </View>
 
@@ -111,7 +125,7 @@ export default function FundWalletScreen() {
               <Text style={styles.bankValue}>1234567890</Text>
             </View>
             <TouchableOpacity onPress={() => handleCopy("1234567890")}>
-              <Ionicons name="copy-outline" size={22} color="#0056D2" />
+              <Ionicons name="copy-outline" size={22} color={PRIMARY_BLUE} />
             </TouchableOpacity>
           </View>
 
@@ -121,7 +135,7 @@ export default function FundWalletScreen() {
               <Text style={styles.bankValue}>Zenith Bank</Text>
             </View>
             <TouchableOpacity onPress={() => handleCopy("Zenith Bank")}>
-              <Ionicons name="copy-outline" size={22} color="#0056D2" />
+              <Ionicons name="copy-outline" size={22} color={PRIMARY_BLUE} />
             </TouchableOpacity>
           </View>
         </View>
@@ -140,13 +154,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "#fff",
     borderWidth: 1.5,
-    borderColor: "#0056D2",
+    borderColor: PRIMARY_BLUE,
     padding: 18,
     borderRadius: 12,
     marginBottom: 15,
   },
-  activeMethod: { backgroundColor: "#0056D2" },
-  methodText: { color: "#0056D2", fontWeight: "600", fontSize: 15 },
+  activeMethod: { backgroundColor: PRIMARY_BLUE },
+  methodText: { color: PRIMARY_BLUE, fontWeight: "600", fontSize: 15 },
   activeText: { color: "#fff" },
   dotContainer: {
     width: 22,
@@ -179,28 +193,34 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   cancelBtn: {
-    borderColor: "#0056D2",
+    borderColor: PRIMARY_BLUE,
     borderWidth: 1.5,
     borderRadius: 10,
     paddingVertical: 13,
     paddingHorizontal: 28,
     marginRight: 10,
   },
-  cancelText: { color: "#0056D2", fontWeight: "600", fontSize: 15 },
+  cancelBtnPressed: {
+    backgroundColor: "#DBEAFE",
+  },
+  cancelText: { color: PRIMARY_BLUE, fontWeight: "600", fontSize: 15 },
   submitBtn: {
-    backgroundColor: "#0056D2",
+    backgroundColor: PRIMARY_BLUE,
     paddingVertical: 13,
     paddingHorizontal: 28,
     borderRadius: 10,
   },
+  submitBtnPressed: {
+    backgroundColor: PRIMARY_BLUE_PRESSED,
+  },
   submitText: { color: "#fff", fontWeight: "600", fontSize: 15 },
   bankBox: {
     marginTop: 25,
-    backgroundColor: "#f7faff",
+    backgroundColor: "#EFF6FF",
     padding: 20,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e0e6f9",
+    borderColor: "#DBEAFE",
   },
   bankRow: {
     flexDirection: "row",

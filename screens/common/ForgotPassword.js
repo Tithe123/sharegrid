@@ -3,10 +3,14 @@ import {
     View,
     Text,
     StyleSheet,
+    Pressable,
     TouchableOpacity,
     TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+
+const PRIMARY_BLUE = "#2563EB";
+const PRIMARY_BLUE_PRESSED = "#3B82F6";
 
 export default function ForgotPassword({ navigation }) {
     const [email, setEmail] = useState("");
@@ -50,9 +54,15 @@ export default function ForgotPassword({ navigation }) {
 
 
             <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.resetButton,
+                        pressed && styles.resetButtonPressed,
+                    ]}
+                    onPress={handleReset}
+                >
                     <Text style={styles.resetText}>Reset Password</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
         </View>
     );
@@ -108,10 +118,13 @@ const styles = StyleSheet.create({
         marginBottom: 40,
     },
     resetButton: {
-        backgroundColor: "#2979FF",
+        backgroundColor: PRIMARY_BLUE,
         paddingVertical: 15,
         borderRadius: 8,
         alignItems: "center",
+    },
+    resetButtonPressed: {
+        backgroundColor: PRIMARY_BLUE_PRESSED,
     },
     resetText: {
         color: "#fff",

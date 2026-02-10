@@ -1,25 +1,36 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import SplashScreen from './screens/SplashScreen';
-import Onboarding from "./screens/Onboarding";
-import Login from "./screens/Login";
-import Signup from './screens/Signup';
-import ForgotPassword from './screens/ForgotPassword';
-import Verify from './screens/Verify';
-import create from './screens/Create';
-import Home from './screens/Home';
-import HomeScreen from './screens/HomeScreen';
-import NearbyWifi from './screens/NearbyWifi';
-import FundWalletOptionsScreen from './screens/FundWalletOptionsScreen';
-import FundWalletScreen from './screens/FundWalletScreen';
-import ViewWalletScreen from './screens/ViewWalletScreen';
-import DepositCryptoScreen from './screens/DepositCryptoScreen';
-import PaymentScreen from './screens/PaymentScreen';
-import CryptoWithdrawalScreen from './screens/CryptoWithdrawalScreen';
-import FiatWithdrawScreen from './screens/FiatWithdraw';
-import beneficiary from './screens/beneficiary';
-import SavedBeneficiariesScreen from './screens/beneficiary2';
+import SplashScreen from './screens/common/SplashScreen';
+import Onboarding from "./screens/common/Onboarding";
+import Login from "./screens/common/Login";
+import Signup from './screens/common/Signup';
+import ForgotPassword from './screens/common/ForgotPassword';
+import Verify from './screens/common/Verify';
+import create from './screens/common/create';
+import Home from './screens/common/Home';
+import FundWalletOptionsScreen from './screens/common/FundWalletOptionsScreen';
+import FundWalletScreen from './screens/common/FundWalletScreen';
+import ViewWalletScreen from './screens/common/ViewWalletScreen';
+import DepositCryptoScreen from './screens/common/DepositCryptoScreen';
+import PaymentScreen from './screens/common/PaymentScreen';
+import CryptoWithdrawalScreen from './screens/common/CryptoWithdrawalScreen';
+import FiatWithdrawScreen from './screens/common/FiatWithdraw';
+import beneficiary from './screens/common/beneficiary';
+import SavedBeneficiariesScreen from './screens/common/beneficiary2';
+
+import HomeScreen from './screens/user/HomeScreen';
+import NearbyWifi from './screens/user/NearbyWifi';
+import UserNotifications from './screens/user/UserNotifications';
+
+import Rewards from './screens/host/Rewards';
+import HostKyc from './screens/host/HostKyc';
+import HostHome from './screens/host/HostHome';
+import HostDashboard from './screens/host/HostDashboard';
+import HostHotspotManage from './screens/host/HostHotspotManage';
+import HostRecentConnections from './screens/host/HostRecentConnections';
+import HostUserFeedback from './screens/host/HostUserFeedback';
+import HostNotifications from './screens/host/HostNotifications';
 const Stack = createNativeStackNavigator();
 
 
@@ -37,6 +48,8 @@ export default function App() {
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="NearbyWifi" component={NearbyWifi} />
+        <Stack.Screen name="Rewards" component={Rewards} />
+        <Stack.Screen name="UserNotifications" component={UserNotifications} />
         <Stack.Screen name="FundWalletOptions" component={FundWalletOptionsScreen} />
         <Stack.Screen name="FundWallet" component={FundWalletScreen} />
         <Stack.Screen name="ViewWallet" component={ViewWalletScreen} /> 
@@ -46,6 +59,13 @@ export default function App() {
         <Stack.Screen name="FiatWithdraw" component={FiatWithdrawScreen} />
         <Stack.Screen name="Beneficiary" component={beneficiary} />
         <Stack.Screen name="SavedBeneficiaries" component={SavedBeneficiariesScreen} />
+        <Stack.Screen name="HostKyc" component={HostKyc} />
+        <Stack.Screen name="HostHome" component={HostHome} />
+        <Stack.Screen name="HostDashboard" component={HostDashboard} />
+        <Stack.Screen name="HostHotspotManage" component={HostHotspotManage} />
+        <Stack.Screen name="HostRecentConnections" component={HostRecentConnections} />
+        <Stack.Screen name="HostUserFeedback" component={HostUserFeedback} />
+        <Stack.Screen name="HostNotifications" component={HostNotifications} />
        
       </Stack.Navigator>
     </NavigationContainer>

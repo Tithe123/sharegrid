@@ -3,9 +3,12 @@ import {
     View,
     Text,
     StyleSheet,
-    TouchableOpacity,
+    Pressable,
     Image,
 } from "react-native";
+
+const PRIMARY_BLUE = "#2563EB";
+const PRIMARY_BLUE_PRESSED = "#3B82F6";
 
 export default function RoleSelection({ navigation }) {
     return (
@@ -13,7 +16,7 @@ export default function RoleSelection({ navigation }) {
 
             <View style={styles.logoContainer}>
                 <Image
-                    source={require("../assets/logo2.png")}
+                    source={require("../../assets/logo2.png")}
                     style={styles.logo}
                     resizeMode="contain"
                 />
@@ -27,19 +30,25 @@ export default function RoleSelection({ navigation }) {
 
 
             <View style={styles.buttonRow}>
-                <TouchableOpacity
-                    style={styles.optionButton}
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.optionButton,
+                        pressed && styles.optionButtonPressed,
+                    ]}
                     onPress={() => navigation.replace("HomeScreen")}
                 >
                     <Text style={styles.optionText}>User</Text>
-                </TouchableOpacity>
+                </Pressable>
 
-                <TouchableOpacity
-                    style={styles.optionButton}
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.optionButton,
+                        pressed && styles.optionButtonPressed,
+                    ]}
                     onPress={() => navigation.replace("HostHome")}
                 >
                     <Text style={styles.optionText}>Host</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
 
 
@@ -74,7 +83,7 @@ const styles = StyleSheet.create({
     },
     logoText: {
         fontSize: 22,
-        color: "#2979FF",
+        color: PRIMARY_BLUE,
         fontWeight: "700",
     },
     question: {
@@ -97,7 +106,7 @@ const styles = StyleSheet.create({
 
     },
     optionButton: {
-        backgroundColor: "#2979FF",
+        backgroundColor: PRIMARY_BLUE,
         borderRadius: 8,
         paddingVertical: 15,
         paddingHorizontal: 25,
@@ -105,6 +114,9 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         height: 51,
         flex: 1,
+    },
+    optionButtonPressed: {
+        backgroundColor: PRIMARY_BLUE_PRESSED,
     },
     optionText: {
         color: "#fff",
@@ -125,6 +137,6 @@ const styles = StyleSheet.create({
         bottom: 40,
     },
     link: {
-        color: "#2979FF",
+        color: PRIMARY_BLUE,
     },
 });

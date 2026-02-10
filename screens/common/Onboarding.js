@@ -3,10 +3,13 @@ import {
     View,
     Text,
     StyleSheet,
-    TouchableOpacity,
+    Pressable,
     Image,
     Animated
 } from "react-native";
+
+const PRIMARY_BLUE = "#2563EB";
+const PRIMARY_BLUE_PRESSED = "#3B82F6";
 
 export default function Onboarding({ navigation }) {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -20,31 +23,31 @@ export default function Onboarding({ navigation }) {
     const onboardingData = [
         {
             id: 1,
-            image: require("../assets/illustration 1.png"),
+            image: require("../../assets/illustration 1.png"),
             title: "Welcome to ShareGrid",
             text: "Share internet, earn token and connect everywhere",
-            dotColor: "#2563EB",
+            dotColor: PRIMARY_BLUE,
         },
         {
             id: 2,
-            image: require("../assets/Frame (3).png"),
+            image: require("../../assets/Frame (3).png"),
             title: "Accessible internet",
             text: "Access affordable internet anywhere",
-            dotColor: "#2563EB",
+            dotColor: PRIMARY_BLUE,
         },
         {
             id: 3,
-            image: require("../assets/Frame (2).png"),
+            image: require("../../assets/Frame (2).png"),
             title: "Fully Decentralized",
             text: "Blockchain-verified connection",
-            dotColor: "#2563EB",
+            dotColor: PRIMARY_BLUE,
         },
         {
             id: 4,
-            image: require("../assets/Frame (1).png"),
+            image: require("../../assets/Frame (1).png"),
             title: "Earn Rewards",
             text: "Share your Internet and get rewarded",
-            dotColor: "#2563EB",
+            dotColor: PRIMARY_BLUE,
         },
     ];
 
@@ -84,12 +87,15 @@ export default function Onboarding({ navigation }) {
     return (
         <View style={styles.container}>
             {currentSlide < onboardingData.length - 1 && (
-                <TouchableOpacity
-                    style={styles.skipButton}
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.skipButton,
+                        pressed && styles.skipButtonPressed,
+                    ]}
                     onPress={handleSkip}
                 >
                     <Text style={styles.skipText}>Skip</Text>
-                </TouchableOpacity>
+                </Pressable>
             )}
 
             <View style={styles.imageContainer}>
@@ -133,14 +139,17 @@ export default function Onboarding({ navigation }) {
                     ))}
                 </View>
 
-                <TouchableOpacity
-                    style={styles.button}
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.button,
+                        pressed && styles.buttonPressed,
+                    ]}
                     onPress={handleNext}
                 >
                     <Text style={styles.buttonText}>
                         {currentSlide === onboardingData.length - 1 ? " Next" : "Next"}
                     </Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
         </View>
     );
@@ -159,9 +168,12 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     skipText: {
-        color: "#2979FF",
+        color: PRIMARY_BLUE,
         fontSize: 16,
         marginVertical: 80,
+    },
+    skipButtonPressed: {
+        opacity: 0.7,
     },
     imageContainer: {
         justifyContent: "center",
@@ -186,7 +198,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         lineHeight: 32,
         letterSpacing: 0,
-        color: "#2979FF",
+        color: PRIMARY_BLUE,
         textAlign: "left",
         marginBottom: 35,
         textAlignVertical: "center",
@@ -222,11 +234,14 @@ const styles = StyleSheet.create({
         marginHorizontal: 4,
     },
     button: {
-        backgroundColor: "#2979FF",
+        backgroundColor: PRIMARY_BLUE,
         paddingVertical: 12,
         paddingHorizontal: 30,
         borderRadius: 15,
         marginHorizontal: -30,
+    },
+    buttonPressed: {
+        backgroundColor: PRIMARY_BLUE_PRESSED,
     },
     buttonText: {
         color: "#fff",

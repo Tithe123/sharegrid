@@ -12,6 +12,9 @@ import { useNavigation } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
+const PRIMARY_BLUE = "#2563EB";
+const PRIMARY_BLUE_PRESSED = "#3B82F6";
+
 export default function ViewWalletScreen() {
   const navigation = useNavigation();
   const [showBalance, setShowBalance] = useState(true);
@@ -61,7 +64,7 @@ export default function ViewWalletScreen() {
     <View style={styles.container}>
 
       <LinearGradient
-        colors={["#1A56D6", "#0056D2"]}
+        colors={[PRIMARY_BLUE, PRIMARY_BLUE]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.headerCard}
@@ -96,7 +99,6 @@ export default function ViewWalletScreen() {
           </View>
         </View>
 
-
         <View style={styles.balanceAndSummary}>
           <View style={styles.balanceRow}>
             <Text style={styles.balanceText}>
@@ -127,7 +129,7 @@ export default function ViewWalletScreen() {
           onPress={() => setShowWithdrawalOptions(true)}
         >
           <View style={styles.iconCircle}>
-            <Feather name="arrow-up-right" size={20} color="#0056D2" />
+            <Feather name="arrow-up-right" size={20} color={PRIMARY_BLUE} />
           </View>
           <Text style={styles.actionText}>Withdraw</Text>
         </TouchableOpacity>
@@ -137,22 +139,21 @@ export default function ViewWalletScreen() {
           onPress={() => setShowFundingOptions(true)}
         >
           <View style={styles.iconCircle}>
-            <Feather name="arrow-down-left" size={20} color="#0056D2" />
+            <Feather name="arrow-down-left" size={20} color={PRIMARY_BLUE} />
           </View>
           <Text style={styles.actionText}>Deposit</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.actionBtn}
           onPress={() => navigation.navigate('Payment')}
         >
           <View style={styles.iconCircle}>
-            <Feather name="repeat" size={20} color="#0056D2" />
+            <Feather name="repeat" size={20} color={PRIMARY_BLUE} />
           </View>
           <Text style={styles.actionText}>Transfer</Text>
         </TouchableOpacity>
       </View>
-
 
       <View style={styles.banner}>
         <View style={{ flex: 1 }}>
@@ -201,7 +202,7 @@ export default function ViewWalletScreen() {
             >
               <View style={styles.optionRow}>
                 <View style={styles.optionIconContainer}>
-                  <Ionicons name="card-outline" size={20} color="#0056D2" />
+                  <Ionicons name="card-outline" size={20} color={PRIMARY_BLUE} />
                 </View>
                 <View>
                   <Text style={styles.optionTitle}>Fiat</Text>
@@ -222,7 +223,7 @@ export default function ViewWalletScreen() {
             >
               <View style={styles.optionRow}>
                 <View style={styles.optionIconContainer}>
-                  <Ionicons name="logo-bitcoin" size={20} color="#0056D2" />
+                  <Ionicons name="logo-bitcoin" size={20} color={PRIMARY_BLUE} />
                 </View>
                 <View>
                   <Text style={styles.optionTitle}>Crypto</Text>
@@ -269,7 +270,7 @@ export default function ViewWalletScreen() {
             >
               <View style={styles.optionRow}>
                 <View style={styles.optionIconContainer}>
-                  <Ionicons name="card-outline" size={20} color="#0056D2" />
+                  <Ionicons name="card-outline" size={20} color={PRIMARY_BLUE} />
                 </View>
                 <View>
                   <Text style={styles.optionTitle}>Fiat</Text>
@@ -290,7 +291,7 @@ export default function ViewWalletScreen() {
             >
               <View style={styles.optionRow}>
                 <View style={styles.optionIconContainer}>
-                  <Ionicons name="logo-bitcoin" size={20} color="#0056D2" />
+                  <Ionicons name="logo-bitcoin" size={20} color={PRIMARY_BLUE} />
                 </View>
                 <View>
                   <Text style={styles.optionTitle}>Crypto Wallet</Text>
@@ -370,18 +371,18 @@ const styles = StyleSheet.create({
   },
   actionBtn: { flex: 1, marginHorizontal: 6, alignItems: "center" },
   iconCircle: {
-    backgroundColor: "#f0f4ff",
+    backgroundColor: "#DBEAFE",
     width: 55,
     height: 55,
     borderRadius: 55 / 2,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1.2,
-    borderColor: "#d0dcff",
+    borderColor: "#BFDBFE",
   },
-  actionText: { marginTop: 8, color: "#0056D2", fontSize: 13, fontWeight: "600" },
+  actionText: { marginTop: 8, color: PRIMARY_BLUE, fontSize: 13, fontWeight: "600" },
   banner: {
-    backgroundColor: "#0056D2",
+    backgroundColor: PRIMARY_BLUE,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -394,7 +395,7 @@ const styles = StyleSheet.create({
   bannerBtn: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#0040B5",
+    backgroundColor: PRIMARY_BLUE_PRESSED,
     paddingVertical: 8,
     paddingHorizontal: 18,
     borderRadius: 8,
@@ -415,25 +416,25 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#f0f0f0", 
+    borderColor: "#f0f0f0",
   },
   sheetHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  sheetTitle: { 
-    fontSize: 20, 
+  sheetTitle: {
+    fontSize: 20,
     fontWeight: "700",
-    color: "#000", 
+    color: "#000",
   },
-  sheetSubText: { 
-    color: "#777", 
-    marginTop: 4, 
+  sheetSubText: {
+    color: "#777",
+    marginTop: 4,
     marginBottom: 15,
   },
   option: {
-    backgroundColor: "#fff", 
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 18,
     marginBottom: 15,
@@ -441,31 +442,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderWidth: 1,
-    borderColor: "#f0f0f0", 
+    borderColor: "#f0f0f0",
   },
-  optionRow: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    gap: 10 
+  optionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   optionIconContainer: {
-    backgroundColor: "#f0f4ff", 
+    backgroundColor: "#DBEAFE",
     width: 44,
     height: 44,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#e0e8ff",
+    borderColor: "#BFDBFE",
   },
-  optionTitle: { 
-    fontSize: 17, 
-    fontWeight: "600", 
-    color: "#000", 
+  optionTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#000",
   },
-  optionDesc: { 
-    color: "#555", 
-    fontSize: 13, 
+  optionDesc: {
+    color: "#555",
+    fontSize: 13,
     marginTop: 2,
   },
 });

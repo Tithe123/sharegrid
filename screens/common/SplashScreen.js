@@ -59,7 +59,7 @@ export default function SplashScreen({ navigation }) {
     ]}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       <View style={styles.row}>
-        <Image source={require("../assets/logo2.png")} style={styles.logo} />
+        <Image source={require("../../assets/logo2.png")} style={styles.logo} />
         <Text style={styles.typewriter}>{displayText}</Text>
       </View>
     </Animated.View>
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   typewriter: {
-    color: "2563EB",
+    color: "#2563EB",
     fontSize: 20,
     fontWeight: "700",
     letterSpacing: 1,

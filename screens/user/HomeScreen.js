@@ -4,13 +4,17 @@ import {
     Text,
     StyleSheet,
     Image,
+    Pressable,
     TouchableOpacity,
     ScrollView,
     Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import NavigationBar from "../components/NavigationBar";
+import NavigationBar from "../../components/NavigationBar";
+
+const PRIMARY_BLUE = "#2563EB";
+const PRIMARY_BLUE_PRESSED = "#3B82F6";
 
 const HomeScreen = () => {
     const navigation = useNavigation();
@@ -26,6 +30,10 @@ const HomeScreen = () => {
             duration: 200,
             useNativeDriver: false,
         }).start();
+
+        if (tab === "Host") {
+            navigation.navigate("HostKyc");
+        }
     };
 
 
@@ -90,12 +98,19 @@ const HomeScreen = () => {
                         <View>
                             <Text style={styles.username}>Hi Bryan</Text>
                             <View style={styles.location}>
-                                <Ionicons name="location-outline" size={14} color="#007AFF" />
+                                <Ionicons name="location" size={14} color={PRIMARY_BLUE} />
                                 <Text style={styles.locationText}>Edo State NG</Text>
                             </View>
                         </View>
                     </View>
-                    <Ionicons name="notifications-outline" size={24} color="#007AFF" />
+                    <TouchableOpacity
+                        style={styles.notificationWrap}
+                        onPress={() => navigation.navigate("UserNotifications")}
+                        hitSlop={10}
+                    >
+                        <Ionicons name="notifications-outline" size={26} color={PRIMARY_BLUE} />
+                        <View style={styles.notificationDot} />
+                    </TouchableOpacity>
                 </View>
 
 
@@ -104,15 +119,17 @@ const HomeScreen = () => {
                         <View style={styles.leftSection}>
                             <View style={styles.balanceRow}>
                                 <Text style={styles.walletLabel}>Available Balance</Text>
-                                <TouchableOpacity
-                                    onPress={() => setBalanceVisible(!balanceVisible)}
+                                <Pressable
+                                    onPress={() => setBalanceVisible((v) => !v)}
+                                    hitSlop={10}
+                                    accessibilityRole="button"
                                 >
                                     <Ionicons
                                         name={balanceVisible ? "eye-outline" : "eye-off-outline"}
                                         size={18}
                                         color="#fff"
                                     />
-                                </TouchableOpacity>
+                                </Pressable>
                             </View>
                             <View style={styles.amountContainer}>
                                 <Text style={styles.walletAmount}>
@@ -126,14 +143,18 @@ const HomeScreen = () => {
 
                         <View style={styles.transactionSection}>
                             <TouchableOpacity style={styles.transactionHistory}>
-                                <Text style={styles.walletLink}>Transaction History ›</Text>
+                                <Text style={styles.walletLink}>Transaction History</Text>
+                                <Ionicons name="chevron-forward" size={16} color="#fff" />
                             </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.walletButton}
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.walletButton,
+                                    pressed && styles.walletButtonPressed,
+                                ]}
                                 onPress={() => navigation.navigate("ViewWallet")}
                             >
                                 <Text style={styles.walletButtonText}>View Wallet</Text>
-                            </TouchableOpacity>
+                            </Pressable>
                         </View>
                     </View>
                 </View>
@@ -144,21 +165,21 @@ const HomeScreen = () => {
                         <View style={styles.actionCircle}>
                             <Ionicons name="share-social-outline" size={28} color="#fff" />
                         </View>
-                        <Text style={styles.actionText}>Share Hotspot</Text>
+                        <Text style={styles.actionText}>Share{"\n"}Hotspot</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles.actionItem}>
                         <View style={styles.actionCircle}>
                             <Ionicons name="wifi-outline" size={28} color="#fff" />
                         </View>
-                        <Text style={styles.actionText}>Connect to Wifi</Text>
+                        <Text style={styles.actionText}>Connect{"\n"}to Wifi</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles.actionItem}>
                         <View style={styles.actionCircle}>
                             <Ionicons name="wallet-outline" size={28} color="#fff" />
                         </View>
-                        <Text style={styles.actionText}>Withdraw</Text>
+                        <Text style={styles.actionText}>Withdraw{"\n"}Earnings</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -169,15 +190,34 @@ const HomeScreen = () => {
                         style={styles.seeMore}
                         onPress={() => navigation.navigate("NearbyWifi")}
                     >
-                        <Text style={styles.link}>See More ›</Text>
+                        <Text style={styles.link}>See More</Text>
+                        <Ionicons name="chevron-forward" size={18} color="#000" />
                     </TouchableOpacity>
                 </View>
 
 
-                <Image
-                    source={{ uri: "https://i.imgur.com/5QZrFTO.png" }}
-                    style={styles.map}
-                />
+                <View style={styles.mapWrap}>
+                    <View style={styles.mapBg}>
+                        <View style={styles.mapRoadHorizontal} />
+                        <View style={styles.mapRoadVertical} />
+                        <View style={styles.mapRoadDiagonal} />
+
+                        <View style={[styles.mapPin, { top: 28, left: 34 }]}>
+                            <Ionicons name="wifi" size={14} color="#fff" />
+                        </View>
+                        <View style={[styles.mapPinAlt, { top: 78, right: 46 }]}>
+                            <Ionicons name="wifi" size={14} color="#fff" />
+                        </View>
+                        <View style={[styles.mapPinAlt, { bottom: 26, left: 88 }]}>
+                            <Ionicons name="wifi" size={14} color="#fff" />
+                        </View>
+
+                        <View style={styles.mapLegend}>
+                            <View style={styles.mapLegendDot} />
+                            <Text style={styles.mapLegendText}>Nearby hotspots</Text>
+                        </View>
+                    </View>
+                </View>
 
 
                 <View style={styles.wifiCard}>
@@ -193,9 +233,10 @@ const HomeScreen = () => {
 
                     <View style={styles.wifiBottomRow}>
                         <Text style={styles.wifiRating}>Rating: 4.5/5.0</Text>
-                        <TouchableOpacity
-                            style={[
+                        <Pressable
+                            style={({ pressed }) => [
                                 styles.connectBtn,
+                                pressed && !isWifiConnected && styles.connectBtnPressed,
                                 isWifiConnected && styles.connectedBtn,
                             ]}
                             onPress={handleConnectWifi}
@@ -208,7 +249,7 @@ const HomeScreen = () => {
                             >
                                 {isWifiConnected ? "Connected" : "Connect"}
                             </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
                 </View>
 
@@ -228,30 +269,35 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#F7F9FB" },
+    container: { flex: 1, backgroundColor: "#FFFFFF" },
     scroll: { paddingBottom: 100 },
 
-    toggleContainer: { alignItems: "center", marginTop: 50 },
+    toggleContainer: { alignItems: "center", marginTop: 55 },
     toggleBackground: {
         flexDirection: "row",
         backgroundColor: "#E9F0FF",
         width: 160,
         height: 38,
-        borderRadius: 4,
+        borderRadius: 8,
         overflow: "hidden",
     },
     toggleInnerButton: {
         position: "absolute",
         width: "50%",
         height: "85%",
-        backgroundColor: "#007AFF",
+        backgroundColor: "#FFFFFF",
         top: 3,
         left: 3,
         borderRadius: 6,
+        shadowColor: "#000",
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 2,
     },
     toggleBtn: { flex: 1, justifyContent: "center", alignItems: "center" },
-    toggleText: { color: "#007AFF", fontSize: 13, fontWeight: "500" },
-    activeToggleText: { color: "#fff", fontWeight: "700" },
+    toggleText: { color: "#111", fontSize: 13, fontWeight: "500" },
+    activeToggleText: { color: PRIMARY_BLUE, fontWeight: "700" },
 
 
     header: {
@@ -263,53 +309,67 @@ const styles = StyleSheet.create({
     },
     userSection: { flexDirection: "row", alignItems: "center" },
     avatar: { width: 45, height: 45, borderRadius: 22.5, marginRight: 10 },
-    username: { fontSize: 16, fontWeight: "600" },
+    username: { fontSize: 18, fontWeight: "700" },
     location: { flexDirection: "row", alignItems: "center" },
-    locationText: { color: "#555", fontSize: 13, marginLeft: 3 },
+    locationText: { color: "#111", fontSize: 14, marginLeft: 6, fontWeight: "500" },
+    notificationWrap: { position: "relative" },
+    notificationDot: {
+        position: "absolute",
+        top: 2,
+        right: 1,
+        width: 9,
+        height: 9,
+        borderRadius: 4.5,
+        backgroundColor: "#EF4444",
+    },
 
 
     walletCard: {
-        backgroundColor: "#007AFF",
+        backgroundColor: PRIMARY_BLUE,
         marginHorizontal: 20,
-        borderRadius: 12,
-        padding: 20,
-        marginTop: 30,
+        borderRadius: 16,
+        padding: 18,
+        marginTop: 22,
     },
     walletTop: { flexDirection: "row", justifyContent: "space-between" },
     balanceRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-    walletLabel: { color: "#fff", opacity: 0.9, fontSize: 13 },
+    walletLabel: { color: "#fff", opacity: 0.95, fontSize: 14, fontWeight: "500" },
     amountContainer: { flexDirection: "row", alignItems: "flex-start" },
-    walletAmount: { fontSize: 28, fontWeight: "bold", color: "#fff" },
-    currency: { color: "#fff", fontSize: 10, marginLeft: 4, marginTop: 5 },
+    walletAmount: { fontSize: 34, fontWeight: "500", color: "#fff", marginTop: 6 },
+    currency: { color: "#fff", fontSize: 12, marginLeft: 8, marginTop: 20, opacity: 0.95 },
     transactionSection: { alignItems: "flex-end" },
-    walletLink: { color: "#fff", fontSize: 14 },
+    transactionHistory: { flexDirection: "row", alignItems: "center", gap: 2 },
+    walletLink: { color: "#fff", fontSize: 14, fontWeight: "500" },
     walletButton: {
-        backgroundColor: "#fff",
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-        borderRadius: 8,
-        marginTop: 10,
+        backgroundColor: "#EFF6FF",
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginTop: 14,
     },
-    walletButtonText: { color: "#007AFF", fontWeight: "600", fontSize: 12 },
+    walletButtonPressed: {
+        backgroundColor: "#DBEAFE",
+    },
+    walletButtonText: { color: PRIMARY_BLUE, fontWeight: "700", fontSize: 13 },
 
 
     actionRow: {
         flexDirection: "row",
         justifyContent: "space-around",
-        marginTop: 25,
-        marginHorizontal: 10,
+        marginTop: 26,
+        marginHorizontal: 18,
     },
-    actionItem: { alignItems: "center" },
+    actionItem: { alignItems: "center", width: 95 },
     actionCircle: {
-        width: 60,
-        height: 60,
-        backgroundColor: "#2563EB",
-        borderRadius: 30,
+        width: 70,
+        height: 70,
+        backgroundColor: PRIMARY_BLUE,
+        borderRadius: 35,
         alignItems: "center",
         justifyContent: "center",
-        marginBottom: 6,
+        marginBottom: 10,
     },
-    actionText: { fontSize: 13, fontWeight: "500", color: "#333" },
+    actionText: { fontSize: 13, fontWeight: "500", color: "#111", textAlign: "center" },
 
 
     sectionHeader: {
@@ -317,21 +377,114 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         marginHorizontal: 20,
         marginTop: 25,
+        alignItems: "center",
     },
-    sectionTitle: { fontSize: 16, fontWeight: "600" },
-    link: { color: "#000", fontWeight: "500", fontSize: 16 },
-    map: {
+    sectionTitle: { fontSize: 18, fontWeight: "700" },
+    seeMore: { flexDirection: "row", alignItems: "center", gap: 2 },
+    link: { color: "#000", fontWeight: "500", fontSize: 14 },
+    mapWrap: {
         marginHorizontal: 20,
         marginVertical: 15,
-        height: 150,
+        height: 170,
+        borderRadius: 12,
+        overflow: "hidden",
+        borderWidth: 1,
+        borderColor: "#EEF2F7",
+    },
+    mapBg: {
+        flex: 1,
+        backgroundColor: "#EAF2FF",
+    },
+    mapRoadHorizontal: {
+        position: "absolute",
+        left: -30,
+        right: -30,
+        top: 70,
+        height: 18,
+        backgroundColor: "rgba(255,255,255,0.65)",
+        transform: [{ rotate: "-2deg" }],
+    },
+    mapRoadVertical: {
+        position: "absolute",
+        top: -30,
+        bottom: -30,
+        left: 125,
+        width: 18,
+        backgroundColor: "rgba(255,255,255,0.65)",
+        transform: [{ rotate: "2deg" }],
+    },
+    mapRoadDiagonal: {
+        position: "absolute",
+        left: -60,
+        right: -60,
+        top: 120,
+        height: 14,
+        backgroundColor: "rgba(255,255,255,0.55)",
+        transform: [{ rotate: "12deg" }],
+    },
+    mapPin: {
+        position: "absolute",
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: PRIMARY_BLUE,
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000",
+        shadowOpacity: 0.12,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 2,
+    },
+    mapPinAlt: {
+        position: "absolute",
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: "#22C55E",
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000",
+        shadowOpacity: 0.12,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 2,
+    },
+    mapLegend: {
+        position: "absolute",
+        left: 10,
+        bottom: 10,
+        backgroundColor: "rgba(255,255,255,0.9)",
+        paddingHorizontal: 10,
+        paddingVertical: 6,
         borderRadius: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+    },
+    mapLegendDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: PRIMARY_BLUE,
+    },
+    mapLegendText: {
+        fontSize: 11,
+        fontWeight: "800",
+        color: "#111",
     },
     wifiCard: {
         backgroundColor: "#fff",
         marginHorizontal: 20,
         padding: 20,
         borderRadius: 12,
-        elevation: 2,
+        borderWidth: 1,
+        borderColor: "#EEF2F7",
+        shadowColor: "#000",
+        shadowOpacity: 0.04,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 3 },
+        elevation: 1,
         marginBottom: 30,
     },
     wifiTopRow: { flexDirection: "row", justifyContent: "space-between" },
@@ -352,13 +505,18 @@ const styles = StyleSheet.create({
     wifiSpeed: { color: "#666", fontSize: 12 },
     wifiRating: { color: "#666", fontSize: 12 },
     connectBtn: {
-        backgroundColor: "#007AFF",
-        paddingHorizontal: 20,
-        paddingVertical: 8,
-        borderRadius: 6,
+        backgroundColor: PRIMARY_BLUE,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 10,
+        minWidth: 120,
+        alignItems: "center",
+    },
+    connectBtnPressed: {
+        backgroundColor: PRIMARY_BLUE_PRESSED,
     },
     connectedBtn: { backgroundColor: "#22C55E" },
-    connectText: { color: "#fff", fontWeight: "600", fontSize: 13 },
+    connectText: { color: "#fff", fontWeight: "700", fontSize: 14 },
     connectedText: { color: "#fff", fontWeight: "600" },
 
 

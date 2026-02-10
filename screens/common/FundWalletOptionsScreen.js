@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
+const PRIMARY_BLUE = "#2563EB";
+
 const { height } = Dimensions.get("window");
 
 export default function FundWalletOptionsModal({ visible, onClose }) {
@@ -98,11 +100,11 @@ const styles = StyleSheet.create({
   header: { fontSize: 20, fontWeight: "700", marginBottom: 4 },
   subText: { color: "#777" },
   option: {
-    backgroundColor: "#f2f5ff",
+    backgroundColor: "#EFF6FF",
     padding: 20,
     borderRadius: 12,
     marginBottom: 15,
   },
-  optionTitle: { fontSize: 18, fontWeight: "600", color: "#0056D2" },
+  optionTitle: { fontSize: 18, fontWeight: "600", color: PRIMARY_BLUE },
   optionDesc: { color: "#555", marginTop: 5 },
 });

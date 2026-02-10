@@ -3,6 +3,7 @@ import {
     View,
     Text,
     StyleSheet,
+    Pressable,
     TouchableOpacity,
     TextInput,
     Modal,
@@ -13,22 +14,21 @@ import { useNavigation } from "@react-navigation/native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
-export default function BankWithdrawalScreen() {
+const PRIMARY_BLUE = "#2563EB";
+const PRIMARY_BLUE_PRESSED = "#3B82F6";
+
+export default function CryptoWithdrawalScreen() {
     const navigation = useNavigation();
     const [showBalance, setShowBalance] = useState(true);
+    const [destinationAddress, setDestinationAddress] = useState("");
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showFailedModal, setShowFailedModal] = useState(false);
-    
-    const [accountNumber, setAccountNumber] = useState("");
-    const [amount, setAmount] = useState("");
-    const [selectedBank, setSelectedBank] = useState("");
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const translateY = useRef(new Animated.Value(200)).current;
 
-    const balance = "5,334.90";
+    const balance = "1,245.75";
 
-    
     const openModal = (setter) => {
         translateY.setValue(200);
         fadeAnim.setValue(0);
@@ -63,24 +63,22 @@ export default function BankWithdrawalScreen() {
     };
 
     const handleProceed = () => {
-    
-        openModal(setShowSuccessModal);
+        openModal(setShowFailedModal);
     };
 
     return (
         <View style={styles.container}>
 
-         
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Feather name="chevron-left" size={22} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Proceed to Withdraw</Text>
+                <Text style={styles.headerTitle}>Crypto Withdrawal</Text>
                 <View style={{ width: 22 }} />
             </View>
 
             <LinearGradient
-                colors={["#1A56D6", "#0056D2"]}
+                colors={[PRIMARY_BLUE_PRESSED, PRIMARY_BLUE]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.balanceCard}
@@ -88,7 +86,7 @@ export default function BankWithdrawalScreen() {
                 <View style={styles.balanceHeader}>
                     <View style={styles.balanceLabelRow}>
                         <Text style={styles.balanceLabel}>Available Balance</Text>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.eyeButton}
                             onPress={() => setShowBalance(!showBalance)}
                         >
@@ -105,77 +103,57 @@ export default function BankWithdrawalScreen() {
                     <Text style={styles.balanceValue}>
                         {showBalance ? balance : "••••••"}
                     </Text>
-                    <Text style={styles.balanceCurrency}>NGN</Text>
+                    <Text style={styles.balanceCurrency}>USDC</Text>
                 </View>
             </LinearGradient>
 
-        
-            <View style={styles.columnHeaders}>
-                <Text style={styles.columnTitle}>Recipient Details</Text>
-                <TouchableOpacity onPress={() => navigation.navigate("SavedBeneficiaries")}>
-                    <Text style={styles.columnTitle}>Beneficiaries  <Feather name="chevron-right" size={15} color="#000" /></Text>
-                </TouchableOpacity>
-            </View>
+            <View style={styles.addressContainer}>
+                <Text style={styles.addressTitle}>Destination Address</Text>
 
-            <View style={styles.inputsContainer}>
-              
-                <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Choose Bank</Text>
-                    <View style={styles.inputWithIcon}>
+                <View style={styles.addressBox}>
+                    <View style={styles.addressInputRow}>
                         <TextInput
-                            style={styles.input}
-                            placeholder="Select your bank"
+                            style={styles.addressInput}
+                            placeholder="Enter address"
                             placeholderTextColor="#64748b"
-                            value={selectedBank}
-                            onChangeText={setSelectedBank}
+                            value={destinationAddress}
+                            onChangeText={setDestinationAddress}
+                            multiline={false}
                         />
-                        <Feather name="chevron-down" size={20} color="#64748b" />
-                    </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Account Number</Text>
-                    <View style={styles.inputWithIcon}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter account number"
-                            placeholderTextColor="#64748b"
-                            value={accountNumber}
-                            onChangeText={setAccountNumber}
-                            keyboardType="numeric"
-                        />
-                        <TouchableOpacity style={styles.pasteButton}>
-                            <Text style={styles.pasteText}>Paste</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-            
-                <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Amount</Text>
-                    <View style={styles.amountInputContainer}>
-                        <TextInput
-                            style={styles.amountInput}
-                            placeholder="0.00"
-                            placeholderTextColor="#64748b"
-                            value={amount}
-                            onChangeText={setAmount}
-                            keyboardType="decimal-pad"
-                        />
-                        <Text style={styles.amountHint}>
-                            Enter amount between NGN 1,000.00 and NGN 4,999,000.00
-                        </Text>
+                        <View style={styles.iconRow}>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.iconButton,
+                                    pressed && styles.iconButtonPressed,
+                                ]}
+                            >
+                                <Text>Paste</Text>
+                            </Pressable>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.iconButton,
+                                    pressed && styles.iconButtonPressed,
+                                ]}
+                            >
+                                <Feather name="maximize" size={18} color={PRIMARY_BLUE} />
+                            </Pressable>
+                        </View>
                     </View>
                 </View>
             </View>
 
             <View style={styles.spacer} />
 
-        
-            <TouchableOpacity style={styles.proceedButton} onPress={handleProceed}>
+            <Pressable
+                style={({ pressed }) => [
+                    styles.proceedButton,
+                    pressed && styles.proceedButtonPressed,
+                ]}
+                onPress={handleProceed}
+            >
                 <Feather name="shield" size={20} color="#fff" style={styles.shieldIcon} />
                 <Text style={styles.proceedButtonText}>PROCEED</Text>
-            </TouchableOpacity>
+            </Pressable>
 
             <Modal transparent visible={showSuccessModal} animationType="none">
                 <Animated.View style={[styles.modalOverlay, { opacity: fadeAnim }]}>
@@ -190,15 +168,15 @@ export default function BankWithdrawalScreen() {
                             <View style={[styles.circleIcon, { backgroundColor: '#dcfce7', borderColor: '#16a34a' }]}>
                                 <Feather name="check" size={28} color="#16a34a" />
                             </View>
-                            <Text style={styles.sheetTitle}>Withdrawal Successful</Text>
+                            <Text style={styles.sheetTitle}>Withdrawal Successful!</Text>
                         </View>
 
                         <View style={styles.sheetButtonsRow}>
                             <TouchableOpacity
-                                style={[styles.sheetBtn, styles.sheetBtnOutline, { borderColor: '#0056D2' }]}
+                                style={[styles.sheetBtn, styles.sheetBtnOutline, { borderColor: PRIMARY_BLUE }]}
                                 onPress={() => closeModal(setShowSuccessModal)}
                             >
-                                <Text style={[styles.sheetBtnOutlineText, { color: '#0056D2' }]}>Transaction History</Text>
+                                <Text style={[styles.sheetBtnOutlineText, { color: PRIMARY_BLUE }]}>Transaction History</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -208,7 +186,7 @@ export default function BankWithdrawalScreen() {
                                     navigation.goBack();
                                 }}
                             >
-                                <Text style={styles.sheetBtnPrimaryText}>Save Beneficiary</Text>
+                                <Text style={styles.sheetBtnPrimaryText}>Go Home</Text>
                             </TouchableOpacity>
                         </View>
                     </Animated.View>
@@ -233,22 +211,22 @@ export default function BankWithdrawalScreen() {
 
                         <View style={styles.sheetButtonsRow}>
                             <TouchableOpacity
-                                style={[styles.sheetBtn, styles.sheetBtnOutline, { borderColor: '#0056D2' }]}
+                                style={[styles.sheetBtn, styles.sheetBtnOutline, { borderColor: PRIMARY_BLUE }]}
                                 onPress={() => {
                                     closeModal(setShowFailedModal);
                                 }}
                             >
-                                <Text style={[styles.sheetBtnOutlineText, { color: '#0056D2' }]}>Retry</Text>
+                                <Text style={[styles.sheetBtnOutlineText, { color: PRIMARY_BLUE }]}>Go Home </Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={[styles.sheetBtn, { backgroundColor: '#0056D2' }]}
+                                style={[styles.sheetBtn, { backgroundColor: PRIMARY_BLUE }]}
                                 onPress={() => {
                                     closeModal(setShowFailedModal);
                                     navigation.goBack();
                                 }}
                             >
-                                <Text style={[styles.sheetBtnPrimaryText, { color: '#fff' }]}>Go Home</Text>
+                                <Text style={[styles.sheetBtnPrimaryText, { color: '#fff' }]}>Retry</Text>
                             </TouchableOpacity>
                         </View>
                     </Animated.View>
@@ -259,9 +237,9 @@ export default function BankWithdrawalScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { 
-        flex: 1, 
-        backgroundColor: "#f5f7fb", 
+    container: {
+        flex: 1,
+        backgroundColor: "#f5f7fb",
         padding: 20,
         marginTop: 40,
     },
@@ -313,85 +291,59 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         marginBottom: 8,
     },
-    columnHeaders: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 20,
+    addressContainer: {
+        padding: 20,
     },
-    columnTitle: {
+    addressTitle: {
         fontSize: 16,
         fontWeight: "600",
         color: "#000",
+        marginBottom: 15,
     },
-    inputsContainer: {
-        gap: 20,
+    addressBox: {
+        backgroundColor: "#f8fafc",
+        borderRadius: 12,
+        padding: 12,
     },
-    inputGroup: {
+    addressInputRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
+    addressInput: {
+        flex: 1,
+        fontSize: 14,
+        color: "#64748b",
+        marginRight: 12,
+        height: 20,
+    },
+    iconRow: {
+        flexDirection: "row",
+        alignItems: "center",
         gap: 8,
     },
-    inputLabel: {
-        fontSize: 14,
-        fontWeight: "600",
-        color: "#000",
-    },
-    inputWithIcon: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        borderWidth: 1,
-        borderColor: "#e2e8f0",
-    },
-    input: {
-        flex: 1,
-        fontSize: 16,
-        color: "#000",
-    },
-    pasteButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#f0f4ff",
-        paddingHorizontal: 12,
-        paddingVertical: 6,
+    iconButton: {
+        backgroundColor: "#DBEAFE",
+        padding: 8,
         borderRadius: 6,
-        gap: 4,
     },
-    pasteText: {
-        color: "#0056D2",
-        fontSize: 12,
-        fontWeight: "600",
-    },
-    amountInputContainer: {
-        backgroundColor: "#fff",
-        borderRadius: 12,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: "#e2e8f0",
-    },
-    amountInput: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: "#000",
-        marginBottom: 8,
-    },
-    amountHint: {
-        fontSize: 12,
-        color: "#64748b",
-        lineHeight: 16,
+    iconButtonPressed: {
+        backgroundColor: "#BFDBFE",
     },
     spacer: {
         flex: 1,
     },
     proceedButton: {
-        backgroundColor: "#0056D2",
+        backgroundColor: PRIMARY_BLUE,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
         paddingVertical: 18,
         borderRadius: 12,
         marginBottom: 10,
+    },
+    proceedButtonPressed: {
+        backgroundColor: PRIMARY_BLUE_PRESSED,
     },
     shieldIcon: {
         marginRight: 10,
@@ -403,72 +355,71 @@ const styles = StyleSheet.create({
         textTransform: "uppercase",
     },
 
-    // Modal Styles
-    modalOverlay: { 
-        flex: 1, 
-        justifyContent: "flex-end", 
-        backgroundColor: "rgba(0,0,0,0.36)" 
+    modalOverlay: {
+        flex: 1,
+        justifyContent: "flex-end",
+        backgroundColor: "rgba(0,0,0,0.36)"
     },
-    sheet: { 
-        backgroundColor: "#fff", 
-        borderTopLeftRadius: 18, 
-        borderTopRightRadius: 18, 
-        padding: 26 
+    sheet: {
+        backgroundColor: "#fff",
+        borderTopLeftRadius: 18,
+        borderTopRightRadius: 18,
+        padding: 26
     },
-    sheetTop: { 
-        alignItems: "flex-end" 
+    sheetTop: {
+        alignItems: "flex-end"
     },
-    sheetCenter: { 
-        alignItems: "center", 
-        marginVertical: 8 
+    sheetCenter: {
+        alignItems: "center",
+        marginVertical: 8
     },
-    circleIcon: { 
-        width: 64, 
-        height: 64, 
-        borderRadius: 34, 
-        alignItems: "center", 
-        justifyContent: "center", 
-        borderWidth: 2, 
-        marginBottom: 10 
+    circleIcon: {
+        width: 64,
+        height: 64,
+        borderRadius: 34,
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 2,
+        marginBottom: 10
     },
-    sheetTitle: { 
-        fontSize: 16, 
-        fontWeight: "700", 
-        color: "#111827", 
-        marginTop: 6 
+    sheetTitle: {
+        fontSize: 16,
+        fontWeight: "700",
+        color: "#111827",
+        marginTop: 6
     },
-    sheetSubText: { 
-        fontSize: 14, 
-        color: "#6B7280", 
-        marginTop: 4, 
-        textAlign: "center" 
+    sheetSubText: {
+        fontSize: 14,
+        color: "#6B7280",
+        marginTop: 4,
+        textAlign: "center"
     },
-    sheetButtonsRow: { 
-        flexDirection: "row", 
-        marginTop: 18, 
-        justifyContent: "space-between" 
+    sheetButtonsRow: {
+        flexDirection: "row",
+        marginTop: 18,
+        justifyContent: "space-between"
     },
-    sheetBtn: { 
-        flex: 1, 
-        paddingVertical: 12, 
-        borderRadius: 10, 
-        alignItems: "center", 
-        marginHorizontal: 6 
+    sheetBtn: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 10,
+        alignItems: "center",
+        marginHorizontal: 6,
     },
-    sheetBtnPrimary: { 
-        backgroundColor: '#0056D2' 
+    sheetBtnPrimary: {
+        backgroundColor: PRIMARY_BLUE,
     },
-    sheetBtnPrimaryText: { 
-        color: "#fff", 
-        fontWeight: "700" 
+    sheetBtnPrimaryText: {
+        color: "#fff",
+        fontWeight: "700",
     },
-    sheetBtnOutline: { 
-        backgroundColor: "#fff", 
-        borderWidth: 1, 
-        borderColor: "#E6EEF9" 
+    sheetBtnOutline: {
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#E6EEF9",
     },
-    sheetBtnOutlineText: { 
-        color: "#111827", 
-        fontWeight: "700" 
+    sheetBtnOutlineText: {
+        color: "#111827",
+        fontWeight: "700",
     },
 });

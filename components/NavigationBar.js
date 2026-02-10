@@ -9,24 +9,28 @@ const NavigationBar = ({ isWifiConnected, onWifiPress }) => {
   const [hoveredTab, setHoveredTab] = useState(null);
 
   const tabs = [
-    { name: "Home", icon: "home-outline", label: "Home" },
-    { name: "Rewards", icon: "gift-outline", label: "Rewards" },
-    { name: "Connect", icon: "wifi-outline", label: "" },
-    { name: "Activities", icon: "list-outline", label: "Activities" },
-    { name: "Profile", icon: "person-outline", label: "Profile" },
+    { name: "Home", routeName: "HomeScreen", icon: "home-outline", label: "Home" },
+    { name: "Rewards", routeName: null, icon: "gift-outline", label: "Rewards" },
+    { name: "Connect", routeName: null, icon: "wifi-outline", label: "" },
+    { name: "Dashboard", routeName: "Home", icon: "grid-outline", label: "Dashboard" },
+    { name: "Profile", routeName: "Home", icon: "person-outline", label: "Profile" },
   ];
 
   return (
     <View style={styles.container}>
       {tabs.map((tab, index) => {
-        const isActive = route.name === tab.name;
+        const isActive = route.name === tab.routeName;
         const isWifi = tab.name === "Connect";
         const isHovered = hoveredTab === tab.name;
 
         return (
           <TouchableOpacity
             key={index}
-            onPress={isWifi ? onWifiPress : () => navigation.navigate(tab.name)}
+            onPress={
+              isWifi
+                ? onWifiPress
+                : () => (tab.routeName ? navigation.navigate(tab.routeName) : null)
+            }
             onPressIn={() => setHoveredTab(tab.name)}
             onPressOut={() => setHoveredTab(null)}
             style={[
