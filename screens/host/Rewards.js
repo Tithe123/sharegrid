@@ -85,7 +85,15 @@ const Rewards = () => {
                 <View style={styles.content}>
                     <View style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>Recent Earnings</Text>
-                        <TouchableOpacity style={styles.seeMore}>
+                        <TouchableOpacity
+                            style={styles.seeMore}
+                            onPress={() =>
+                                navigation.navigate("EarningsBreakdown", {
+                                    initialTab: "Host",
+                                    hostHasEarnings: true,
+                                })
+                            }
+                        >
                             <Text style={styles.seeMoreText}>See More</Text>
                             <Ionicons name="chevron-forward" size={18} color="#111" />
                         </TouchableOpacity>
@@ -120,7 +128,10 @@ const Rewards = () => {
 
                     <View style={styles.sectionHeaderAlt}>
                         <Text style={styles.sectionTitle}>Overall Leaderboard</Text>
-                        <TouchableOpacity style={styles.seeMore}>
+                        <TouchableOpacity
+                            style={styles.seeMore}
+                            onPress={() => navigation.navigate("Leaderboards")}
+                        >
                             <Text style={styles.seeMoreText}>See More</Text>
                             <Ionicons name="chevron-forward" size={18} color="#111" />
                         </TouchableOpacity>
@@ -139,7 +150,7 @@ const Rewards = () => {
                         ].map((u) => (
                             <View key={u.rank} style={styles.leaderCard}>
                                 <Image
-                                    source={{ uri: "https://i.pravatar.cc/70?img=12" }}
+                                    source={require("../../assets/illustration 1.png")}
                                     style={styles.avatar}
                                 />
                                 <Text style={styles.leaderRank}>{u.rank}</Text>
@@ -199,7 +210,10 @@ const Rewards = () => {
                                     </Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.navItem}>
+                                <TouchableOpacity
+                                    style={styles.navItem}
+                                    onPress={() => navigation.navigate("HostProfile")}
+                                >
                                     <Ionicons
                                         name="person-outline"
                                         size={22}
@@ -277,7 +291,10 @@ const Rewards = () => {
                     <Text style={[styles.navLabel, styles.navLabelActive]}>Rewards</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.navItem}>
+                <TouchableOpacity
+                    style={styles.navItem}
+                    onPress={() => navigation.navigate("HostProfile")}
+                >
                     <Ionicons name="person-outline" size={22} color="#9CA3AF" />
                     <Text style={styles.navLabel}>Profile</Text>
                 </TouchableOpacity>

@@ -248,7 +248,10 @@ const HostDashboard = () => {
                     <Text style={styles.navLabel}>Rewards</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.navItem}>
+                <TouchableOpacity
+                    style={styles.navItem}
+                    onPress={() => navigation.navigate("HostProfile")}
+                >
                     <Ionicons name="person-outline" size={22} color="#9CA3AF" />
                     <Text style={styles.navLabel}>Profile</Text>
                 </TouchableOpacity>

@@ -25,7 +25,6 @@ export default function NearbyWifiScreen() {
     };
 
     const handleConnectClick = () => {
-
         setShowConfirmation(true);
     };
 
@@ -39,7 +38,6 @@ export default function NearbyWifiScreen() {
 
     const cancelConnection = () => {
         setShowConfirmation(false);
-
     };
 
     const handleDisconnect = () => {
@@ -91,7 +89,7 @@ export default function NearbyWifiScreen() {
                     <View style={{ flex: 1 }} />
                 </View>
                 <View style={styles.filterRow}>
-                    <Text style={styles.filterText}>Popular/Recommended</Text>
+                    <Text style={styles.filterText}>Nearby hotspots</Text>
                     <TouchableOpacity
                         style={styles.filterButton}
                         onPress={() => setIsFilterVisible(true)}
@@ -108,7 +106,6 @@ export default function NearbyWifiScreen() {
                 renderItem={renderItem}
                 contentContainerStyle={styles.flatListContent}
             />
-
 
             <Modal
                 visible={isFilterVisible}
@@ -391,7 +388,6 @@ const styles = StyleSheet.create({
     detailsSsid: {
         fontWeight: "700",
         fontSize: 16,
-        marginBottom: 4,
     },
     detailsLocation: {
         color: "#888",

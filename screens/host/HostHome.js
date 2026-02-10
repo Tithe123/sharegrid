@@ -83,7 +83,7 @@ const HostHome = () => {
                 <View style={styles.header}>
                     <View style={styles.userSection}>
                         <Image
-                            source={{ uri: "https://i.pravatar.cc/100" }}
+                            source={require("../../assets/illustration 1.png")}
                             style={styles.avatar}
                         />
                         <View>
@@ -126,7 +126,10 @@ const HostHome = () => {
                         </View>
 
                         <View style={styles.transactionSection}>
-                            <TouchableOpacity style={styles.transactionHistory}>
+                            <TouchableOpacity
+                                style={styles.transactionHistory}
+                                onPress={() => navigation.navigate("HostTransactionHistory")}
+                            >
                                 <Text style={styles.walletLink}>Transaction History</Text>
                                 <Ionicons
                                     name="chevron-forward"
@@ -159,14 +162,20 @@ const HostHome = () => {
                         <Text style={styles.actionText}>Share{"\n"}Hotspot</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.actionItem}>
+                    <TouchableOpacity
+                        style={styles.actionItem}
+                        onPress={() => navigation.navigate("NearbyWifi")}
+                    >
                         <View style={styles.actionCircle}>
                             <Ionicons name="wifi-outline" size={28} color="#fff" />
                         </View>
                         <Text style={styles.actionText}>Connect{"\n"}to Wifi</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.actionItem}>
+                    <TouchableOpacity
+                        style={styles.actionItem}
+                        onPress={() => navigation.navigate("ViewWallet", { openWithdrawalModal: true })}
+                    >
                         <View style={styles.actionCircle}>
                             <Ionicons
                                 name="wallet-outline"
@@ -423,7 +432,10 @@ const HostHome = () => {
                     <Text style={styles.navLabel}>Rewards</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.navItem}>
+                <TouchableOpacity
+                    style={styles.navItem}
+                    onPress={() => navigation.navigate("HostProfile")}
+                >
                     <Ionicons name="person-outline" size={22} color="#9CA3AF" />
                     <Text style={styles.navLabel}>Profile</Text>
                 </TouchableOpacity>

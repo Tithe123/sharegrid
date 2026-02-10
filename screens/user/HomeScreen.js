@@ -93,7 +93,7 @@ const HomeScreen = () => {
                 <View style={styles.header}>
                     <View style={styles.userSection}>
                         <Image
-                            source={{ uri: "https://i.pravatar.cc/100" }}
+                            source={require("../../assets/illustration 1.png")}
                             style={styles.avatar}
                         />
                         <View>
@@ -143,7 +143,10 @@ const HomeScreen = () => {
                         </View>
 
                         <View style={styles.transactionSection}>
-                            <TouchableOpacity style={styles.transactionHistory}>
+                            <TouchableOpacity
+                                style={styles.transactionHistory}
+                                onPress={() => navigation.navigate("UserTransactionHistory")}
+                            >
                                 <Text style={styles.walletLink}>Transaction History</Text>
                                 <Ionicons name="chevron-forward" size={16} color="#fff" />
                             </TouchableOpacity>
@@ -169,14 +172,20 @@ const HomeScreen = () => {
                         <Text style={styles.actionText}>Share{"\n"}Hotspot</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.actionItem}>
+                    <TouchableOpacity
+                        style={styles.actionItem}
+                        onPress={() => navigation.navigate("NearbyWifi")}
+                    >
                         <View style={styles.actionCircle}>
                             <Ionicons name="wifi-outline" size={28} color="#fff" />
                         </View>
                         <Text style={styles.actionText}>Connect{"\n"}to Wifi</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.actionItem}>
+                    <TouchableOpacity
+                        style={styles.actionItem}
+                        onPress={() => navigation.navigate("ViewWallet", { openWithdrawalModal: true })}
+                    >
                         <View style={styles.actionCircle}>
                             <Ionicons name="wallet-outline" size={28} color="#fff" />
                         </View>
@@ -321,7 +330,7 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#FFFFFF" },
-    scroll: { paddingBottom: 80 },
+    scroll: { paddingBottom: 110 },
 
     toggleContainer: { alignItems: "center", marginTop: 55 },
     toggleBackground: {
@@ -379,7 +388,7 @@ const styles = StyleSheet.create({
         backgroundColor: PRIMARY_BLUE,
         marginHorizontal: 20,
         borderRadius: 16,
-        padding: 18,
+        padding: 22,
         marginTop: 22,
     },
     walletTop: { flexDirection: "row", justifyContent: "space-between" },

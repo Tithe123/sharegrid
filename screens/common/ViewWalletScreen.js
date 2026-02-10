@@ -8,7 +8,7 @@ import {
   Animated,
   TouchableWithoutFeedback,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -17,6 +17,7 @@ const PRIMARY_BLUE_PRESSED = "#3B82F6";
 
 export default function ViewWalletScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const [showBalance, setShowBalance] = useState(true);
   const [showFundingOptions, setShowFundingOptions] = useState(false);
   const [showWithdrawalOptions, setShowWithdrawalOptions] = useState(false);
@@ -59,6 +60,13 @@ export default function ViewWalletScreen() {
       }).start();
     }
   }, [showWithdrawalOptions]);
+
+  useEffect(() => {
+    if (route?.params?.openWithdrawalModal) {
+      setShowWithdrawalOptions(true);
+      navigation.setParams({ openWithdrawalModal: false });
+    }
+  }, [route?.params?.openWithdrawalModal]);
 
   return (
     <View style={styles.container}>
