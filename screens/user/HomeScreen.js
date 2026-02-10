@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 import NavigationBar from "../../components/NavigationBar";
 
 const PRIMARY_BLUE = "#2563EB";
@@ -257,6 +258,56 @@ const HomeScreen = () => {
                 <View style={styles.optionsContainer}>
                     <Text style={styles.optionsText}>Options</Text>
                 </View>
+
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.optionsRow}
+                >
+                    <LinearGradient
+                        colors={["#2C67F5", PRIMARY_BLUE]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.optionCard}
+                    >
+                        <View style={styles.optionContent}>
+                            <Text style={styles.optionTitle}>Earn rewards by{"\n"}sharing data</Text>
+                            <Text style={styles.optionSubtitle}>
+                                Connect to hotspots and earn points from activity
+                            </Text>
+                            <View style={styles.optionCtaRow}>
+                                <Text style={styles.optionCtaText}>Explore</Text>
+                                <Ionicons name="arrow-forward" size={18} color="#22C55E" />
+                            </View>
+                        </View>
+
+                        <View style={styles.optionIconWrap}>
+                            <Ionicons name="gift-outline" size={40} color="rgba(255,255,255,0.95)" />
+                        </View>
+                    </LinearGradient>
+
+                    <LinearGradient
+                        colors={["#0EA5E9", "#2563EB"]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.optionCard}
+                    >
+                        <View style={styles.optionContent}>
+                            <Text style={styles.optionTitle}>Find WiFi near{"\n"}you</Text>
+                            <Text style={styles.optionSubtitle}>
+                                View hotspots on the map and connect instantly
+                            </Text>
+                            <View style={styles.optionCtaRow}>
+                                <Text style={styles.optionCtaText}>Browse</Text>
+                                <Ionicons name="arrow-forward" size={18} color="#22C55E" />
+                            </View>
+                        </View>
+
+                        <View style={styles.optionIconWrap}>
+                            <Ionicons name="wifi" size={40} color="rgba(255,255,255,0.95)" />
+                        </View>
+                    </LinearGradient>
+                </ScrollView>
             </ScrollView>
 
 
@@ -270,7 +321,7 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#FFFFFF" },
-    scroll: { paddingBottom: 100 },
+    scroll: { paddingBottom: 80 },
 
     toggleContainer: { alignItems: "center", marginTop: 55 },
     toggleBackground: {
@@ -520,8 +571,58 @@ const styles = StyleSheet.create({
     connectedText: { color: "#fff", fontWeight: "600" },
 
 
-    optionsContainer: { marginLeft: 20, marginBottom: 40 },
+    optionsContainer: { marginLeft: 20, marginBottom: 0 },
     optionsText: { fontSize: 18, fontWeight: "700", color: "#000" },
+    optionsRow: {
+        paddingHorizontal: 20,
+        paddingTop: 12,
+        paddingBottom: 12,
+        gap: 12,
+    },
+    optionCard: {
+        width: 290,
+        borderRadius: 14,
+        padding: 16,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
+    optionContent: {
+        flex: 1,
+        paddingRight: 12,
+    },
+    optionTitle: {
+        fontSize: 18,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        lineHeight: 22,
+    },
+    optionSubtitle: {
+        marginTop: 8,
+        fontSize: 12,
+        fontWeight: "700",
+        color: "rgba(255,255,255,0.92)",
+        lineHeight: 16,
+    },
+    optionCtaRow: {
+        marginTop: 12,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+    },
+    optionCtaText: {
+        color: "#FFFFFF",
+        fontSize: 13,
+        fontWeight: "900",
+    },
+    optionIconWrap: {
+        width: 86,
+        height: 86,
+        borderRadius: 43,
+        backgroundColor: "rgba(255,255,255,0.16)",
+        alignItems: "center",
+        justifyContent: "center",
+    },
 });
 
 export default HomeScreen;
