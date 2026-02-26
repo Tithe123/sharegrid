@@ -43,25 +43,36 @@ export default function SplashScreen({ navigation }) {
         const isAuthenticated = await authService.isAuthenticated();
         
         if (isAuthenticated) {
-          // Check if user has completed onboarding
-          const isOnboarded = await authService.isOnboarded();
           const session = await authService.checkSession();
           
-          if (isOnboarded && session) {
-            // User is authenticated and onboarded, go to main app
+          if (session) {
+            // Get user profiles
             const profiles = await authService.getUserProfiles(session.user.id);
             
-            if (profiles && profiles.length > 0) {
-              // Navigate based on first profile role
-              const primaryRole = profiles[0].role;
-              navigation.replace(primaryRole === 'host' ? 'HostHome' : 'HomeScreen');
+            // Check if user has complete profile (name and role set)
+            const hasCompleteProfile = authService.checkProfileComplete(profiles);
+            
+            if (hasCompleteProfile) {
+              // User has complete profile, navigate to appropriate dashboard
+              const primaryProfile = authService.getPrimaryProfile(profiles);
+              
+              // Navigate based on role
+              if (primaryProfile.role === 'host') {
+                navigation.replace('HostHome');
+              } else {
+                navigation.replace('HomeScreen');
+              }
             } else {
-              // No profiles, go to role selection
-              navigation.replace("Home");
+              // Profile incomplete or doesn't exist, go to role selection
+              navigation.replace("Home", {
+                email: session.user.email,
+                supabaseUserId: session.user.id,
+                needsProfileCreation: true
+              });
             }
           } else {
-            // Authenticated but not onboarded
-            navigation.replace("Home");
+            // No valid session, show onboarding
+            navigation.replace("Onboarding");
           }
         } else {
           // Not authenticated, show onboarding

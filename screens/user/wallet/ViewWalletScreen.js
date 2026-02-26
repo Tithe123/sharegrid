@@ -7,23 +7,126 @@ import {
   Platform,
   Animated,
   TouchableWithoutFeedback,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import axios from "axios";
+import walletService from "../../../services/walletService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function ViewWalletScreen() {
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3001/api";
+const DEFAULT_NETWORK = "base-sepolia";
+
+export default function ViewWalletScreen({ route }) {
   const navigation = useNavigation();
+  const { profileId, email } = route?.params || {};
+  
   const [showBalance, setShowBalance] = useState(true);
   const [showFundingOptions, setShowFundingOptions] = useState(false);
   const [showWithdrawalOptions, setShowWithdrawalOptions] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState("fiat"); // "fiat" or "crypto"
+  const [userId, setUserId] = useState(null);
 
   const slideAnim = useRef(new Animated.Value(600)).current;
   const withdrawalSlideAnim = useRef(new Animated.Value(600)).current;
 
-  const balance = "5,334.90";
-  const earned = "1,850";
-  const spent = "650";
+  // Fiat wallet state
+  const [fiatBalance, setFiatBalance] = useState("0.00");
+  const [earned, setEarned] = useState("0");
+  const [spent, setSpent] = useState("0");
+  
+  // Crypto wallet state
+  const [cryptoBalance, setCryptoBalance] = useState("0.00");
+  const [cryptoAddress, setCryptoAddress] = useState(null);
+  const [hasWallet, setHasWallet] = useState(false);
+
+  useEffect(() => {
+    loadUserAndWalletData();
+  }, []);
+
+  const loadUserAndWalletData = async () => {
+    try {
+      setLoading(true);
+      
+      // Get user ID from storage
+      const userData = await AsyncStorage.getItem('@sharegrid_user');
+      let uid = null;
+      if (userData) {
+        const parsed = JSON.parse(userData);
+        uid = parsed.supabaseUserId || parsed.id;
+        setUserId(uid);
+      }
+      
+      // Load fiat balance
+      try {
+        const response = await axios.get(
+          `${API_URL}/wallet/fiat/${profileId}/balance`
+        );
+        
+        if (response.data.success) {
+          const data = response.data.data;
+          const bal = parseFloat(data.balance || 0);
+          setFiatBalance(bal.toLocaleString("en-NG", { minimumFractionDigits: 2 }));
+          setEarned(parseFloat(data.totalFunded || 0).toLocaleString("en-NG"));
+          setSpent(parseFloat(data.totalWithdrawn || 0).toLocaleString("en-NG"));
+        }
+      } catch (fiatError) {
+        console.log("Fiat wallet not found, will be created on first use");
+        setFiatBalance("0.00");
+        setEarned("0");
+        setSpent("0");
+      }
+
+      // Load crypto wallet from backend using user ID
+      if (uid) {
+        try {
+          const wallet = await walletService.getCryptoWallet(uid);
+          
+          if (wallet) {
+            setCryptoAddress(wallet.address || wallet.wallet_address);
+            setHasWallet(true);
+            await loadCryptoBalance(uid);
+          }
+        } catch (cryptoError) {
+          console.log("Crypto wallet not found yet");
+        }
+      }
+      
+    } catch (error) {
+      console.error("Error loading wallet data:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const loadCryptoBalance = async (uid) => {
+    try {
+      const balanceData = await walletService.getCryptoBalance(uid, DEFAULT_NETWORK);
+      
+      if (balanceData?.balance?.formatted) {
+        setCryptoBalance(parseFloat(balanceData.balance.formatted).toFixed(6));
+      }
+    } catch (error) {
+      console.log("Could not fetch crypto balance:", error.message);
+      setCryptoBalance("0.00");
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadUserAndWalletData();
+  };
+
+  // Get display balance based on active tab
+  const displayBalance = activeTab === "fiat" ? fiatBalance : cryptoBalance;
+  const displayCurrency = activeTab === "fiat" ? "NGN" : "ETH";
 
   useEffect(() => {
     if (showFundingOptions) {
@@ -57,8 +160,22 @@ export default function ViewWalletScreen() {
     }
   }, [showWithdrawalOptions]);
 
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#0056D2" />
+        <Text style={{ marginTop: 10, color: "#666" }}>Loading wallet...</Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
 
       <LinearGradient
         colors={["#1A56D6", "#0056D2"]}
@@ -80,9 +197,29 @@ export default function ViewWalletScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Wallet Type Tabs */}
+        <View style={styles.walletTabs}>
+          <TouchableOpacity
+            style={[styles.walletTab, activeTab === "fiat" && styles.activeTab]}
+            onPress={() => setActiveTab("fiat")}
+          >
+            <Ionicons name="card-outline" size={16} color="#fff" />
+            <Text style={styles.tabText}>Fiat (NGN)</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.walletTab, activeTab === "crypto" && styles.activeTab]}
+            onPress={() => setActiveTab("crypto")}
+          >
+            <Ionicons name="dollar" size={16} color="#fff" />
+            <Text style={styles.tabText}>Crypto (ETH)</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.walletInfo}>
           <View style={styles.walletLabelRow}>
-            <Text style={styles.walletLabel}>Wallet Balance</Text>
+            <Text style={styles.walletLabel}>
+              {activeTab === "fiat" ? "Fiat Balance" : "Crypto Balance"}
+            </Text>
             <TouchableOpacity
               style={styles.eyeIcon}
               onPress={() => setShowBalance(!showBalance)}
@@ -96,28 +233,46 @@ export default function ViewWalletScreen() {
           </View>
         </View>
 
-
         <View style={styles.balanceAndSummary}>
           <View style={styles.balanceRow}>
             <Text style={styles.balanceText}>
-              {showBalance ? balance : "••••••"}
+              {showBalance ? displayBalance : "••••••"}
             </Text>
-            <Text style={styles.currency}>NGN</Text>
+            <Text style={styles.currency}>{displayCurrency}</Text>
           </View>
 
-          <View style={styles.summaryColumn}>
-            <View style={styles.summaryItem}>
-              <AntDesign name="arrowup" size={13} color="#00ff88" />
-              <Text style={styles.summaryText}> {earned} NGN </Text>
-              <Text style={styles.summaryLabel}>Earned</Text>
-            </View>
+          {activeTab === "fiat" ? (
+            <View style={styles.summaryColumn}>
+              <View style={styles.summaryItem}>
+                <AntDesign name="arrowup" size={13} color="#00ff88" />
+                <Text style={styles.summaryText}> {earned} NGN </Text>
+                <Text style={styles.summaryLabel}>Funded</Text>
+              </View>
 
-            <View style={styles.summaryItem}>
-              <AntDesign name="arrowdown" size={13} color="#ff4444" />
-              <Text style={styles.summaryText}> {spent} NGN </Text>
-              <Text style={styles.summaryLabel}>Spent</Text>
+              <View style={styles.summaryItem}>
+                <AntDesign name="arrowdown" size={13} color="#ff4444" />
+                <Text style={styles.summaryText}> {spent} NGN </Text>
+                <Text style={styles.summaryLabel}>Withdrawn</Text>
+              </View>
             </View>
-          </View>
+          ) : (
+            <View style={styles.summaryColumn}>
+              {hasWallet ? (
+                <View style={styles.addressBadge}>
+                  <Text style={styles.addressText}>
+                    {cryptoAddress?.slice(0, 6)}...{cryptoAddress?.slice(-4)}
+                  </Text>
+                </View>
+              ) : (
+                <TouchableOpacity 
+                  style={styles.connectBtn}
+                  onPress={() => navigation.navigate("ConnectWallet", { profileId })}
+                >
+                  <Text style={styles.connectBtnText}>Connect Wallet</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       </LinearGradient>
 
@@ -196,7 +351,7 @@ export default function ViewWalletScreen() {
               style={styles.option}
               onPress={() => {
                 setShowFundingOptions(false);
-                navigation.navigate("FundWallet");
+                navigation.navigate("FundWallet", { profileId, email });
               }}
             >
               <View style={styles.optionRow}>
@@ -264,7 +419,7 @@ export default function ViewWalletScreen() {
               style={styles.option}
               onPress={() => {
                 setShowWithdrawalOptions(false);
-                navigation.navigate("FiatWithdraw");
+                navigation.navigate("FiatWithdraw", { profileId });
               }}
             >
               <View style={styles.optionRow}>
@@ -304,7 +459,7 @@ export default function ViewWalletScreen() {
           </Animated.View>
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -467,5 +622,49 @@ const styles = StyleSheet.create({
     color: "#555", 
     fontSize: 13, 
     marginTop: 2,
+  },
+  walletTabs: {
+    flexDirection: "row",
+    marginTop: 15,
+    gap: 10,
+  },
+  walletTab: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    gap: 6,
+  },
+  activeTab: {
+    backgroundColor: "rgba(255,255,255,0.3)",
+  },
+  tabText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  addressBadge: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  addressText: {
+    color: "#fff",
+    fontSize: 12,
+    fontFamily: "monospace",
+  },
+  connectBtn: {
+    backgroundColor: "rgba(255,255,255,0.25)",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  connectBtnText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
   },
 });

@@ -1,4 +1,4 @@
-package com.triumphant.sharegrid
+package com.sharegrid.app
 
 import android.os.Build
 import android.os.Bundle

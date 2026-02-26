@@ -5,21 +5,139 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import * as Clipboard from "expo-clipboard";
+import axios from "axios";
+import { usePaystack } from "react-native-paystack-webview";
 
-export default function FundWalletScreen() {
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3001/api";
+const PAYSTACK_PUBLIC_KEY = process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY;
+
+export default function FundWalletScreen({ route }) {
+  const navigation = useNavigation();
+  const { popup } = usePaystack();
+  const { profileId, email } = route?.params || {};
+  
   const [method, setMethod] = useState("card");
+  const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleCopy = (text) => {
-    alert(`${text} copied to clipboard!`);
+  const handleCopy = async (text) => {
+    await Clipboard.setStringAsync(text);
+    Alert.alert("Copied", `${text} copied to clipboard!`);
+  };
+
+  const handleFundWithPaystack = async () => {
+    if (!amount || parseFloat(amount) < 100) {
+      Alert.alert("Error", "Minimum funding amount is ₦100");
+      return;
+    }
+
+    if (!email) {
+      Alert.alert("Error", "Email is required for payment");
+      return;
+    }
+
+    if (!PAYSTACK_PUBLIC_KEY) {
+      Alert.alert("Error", "Paystack public key is not configured");
+      return;
+    }
+
+    if (!profileId) {
+      Alert.alert("Error", "Profile ID is missing");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const response = await axios.post(
+        `${API_URL}/wallet/fiat/${profileId}/fund`,
+        {
+          amount: parseFloat(amount),
+          email: email,
+          callbackUrl: "sharegrid://payment-callback"
+        }
+      );
+
+      if (response.data.success) {
+        const { reference } = response.data.data;
+        const amountInNaira = parseFloat(amount);
+
+        popup.checkout({
+          email,
+          amount: amountInNaira,
+          reference,
+          metadata: {
+            custom_fields: [
+              {
+                display_name: "Profile ID",
+                variable_name: "profile_id",
+                value: profileId
+              }
+            ]
+          },
+          onSuccess: async (res) => {
+            const ref =
+              res?.transactionRef?.reference ||
+              res?.transactionRef?.trxref ||
+              res?.reference ||
+              reference;
+
+            if (!ref) {
+              Alert.alert("Error", "Missing transaction reference");
+              return;
+            }
+
+            try {
+              setLoading(true);
+              await axios.post(`${API_URL}/wallet/fiat/verify-payment`, { reference: ref });
+              Alert.alert("Success", "Wallet funded successfully");
+              setAmount("");
+              navigation.goBack();
+            } catch (verifyError) {
+              console.error("Payment verification error:", verifyError);
+              Alert.alert(
+                "Error",
+                verifyError.response?.data?.message || "Failed to verify payment"
+              );
+            } finally {
+              setLoading(false);
+            }
+          },
+          onCancel: () => {
+            Alert.alert("Payment cancelled", "You can try again anytime.");
+          },
+          onLoad: () => {
+            // Optional hook for analytics/debugging
+          },
+          onError: (err) => {
+            console.error("Paystack WebView error:", err);
+            Alert.alert("Error", "Payment could not be completed");
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Fund wallet error:", error);
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Failed to initialize payment"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-
       <View style={styles.headerRow}>
-        <Ionicons name="chevron-back" size={26} color="#000" />
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={26} color="#000" />
+        </TouchableOpacity>
         <Text style={styles.header}>Fund Wallet</Text>
       </View>
 
@@ -51,43 +169,35 @@ export default function FundWalletScreen() {
         <>
           <View style={styles.form}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Card Number</Text>
+              <Text style={styles.label}>Amount (NGN)</Text>
               <TextInput
-                placeholder="Enter your card number"
+                placeholder="Enter amount to fund"
                 keyboardType="numeric"
                 style={styles.input}
+                value={amount}
+                onChangeText={setAmount}
               />
+              <Text style={styles.hint}>Minimum: ₦100</Text>
             </View>
-
-            <View style={styles.row}>
-              <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
-                <Text style={styles.label}>Expiration Date</Text>
-                <TextInput placeholder="MM/YY" style={styles.input} />
-              </View>
-
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>CVV</Text>
-                <TextInput
-                  placeholder="***"
-                  keyboardType="numeric"
-                  style={styles.input}
-                />
-              </View>
-            </View>
-          </View>
-          <View style={styles.checkboxContainer}>
-            <Ionicons name="checkbox-outline" size={22} color="#0056D2" />
-            <Text style={styles.checkboxText}>
-              Save card securely for future payments
-            </Text>
           </View>
 
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.cancelBtn}>
+            <TouchableOpacity 
+              style={styles.cancelBtn}
+              onPress={() => navigation.goBack()}
+            >
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.submitBtn}>
-              <Text style={styles.submitText}>Add Card</Text>
+            <TouchableOpacity 
+              style={[styles.submitBtn, loading && styles.disabledBtn]}
+              onPress={handleFundWithPaystack}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.submitText}>Pay with Paystack</Text>
+              )}
             </TouchableOpacity>
           </View>
         </>
@@ -95,6 +205,10 @@ export default function FundWalletScreen() {
 
       {method === "bank" && (
         <View style={styles.bankBox}>
+          <Text style={styles.bankNote}>
+            Transfer to the account below and your wallet will be credited automatically.
+          </Text>
+          
           <View style={styles.bankRow}>
             <View>
               <Text style={styles.bankLabel}>Account Name</Text>
@@ -126,6 +240,7 @@ export default function FundWalletScreen() {
           </View>
         </View>
       )}
+
     </View>
   );
 }
@@ -210,4 +325,7 @@ const styles = StyleSheet.create({
   },
   bankLabel: { color: "#777", fontSize: 14 },
   bankValue: { fontWeight: "600", fontSize: 16, color: "#000" },
+  hint: { color: "#777", fontSize: 12, marginTop: 5 },
+  bankNote: { color: "#555", fontSize: 14, marginBottom: 20, lineHeight: 20 },
+  disabledBtn: { backgroundColor: "#999" },
 });

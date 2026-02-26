@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.triumphant.sharegrid"
+      "bundleIdentifier": "com.sharegrid.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,24 +23,26 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.triumphant.sharegrid"
+      "package": "com.sharegrid.app"
     },
     "web": {
       "favicon": "./assets/icon.png"
     },
     "plugins": [
-      [
-        "@react-native-google-signin/google-signin",
-        {
-          "iosUrlScheme": "com.googleusercontent.apps.244470367906-u8ci3be2l01s5qefahblssd8cisn0mj9"
-        }
-      ],
+      "expo-secure-store",
+      "expo-apple-authentication",
       [
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow ShareGrid to use your location."
         }
-      ]
+      ],[
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.244470367906-u8ci3be2l01s5qefahblssd8cisn0mj9"
+        }
+      ],
+      "expo-web-browser"
     ]
   }
 }

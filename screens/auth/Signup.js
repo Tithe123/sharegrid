@@ -147,6 +147,8 @@ export default function Signup({ navigation }) {
     }
   };
 
+  
+
   const handleGoogleSignup = async () => {
     setIsLoading(true);
     startLoadingAnimation();

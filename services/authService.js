@@ -114,6 +114,8 @@ class AuthService {
         password
       });
 
+      console.log(authError)
+
       if (authError) {
         throw new Error(authError.message);
       }
@@ -147,10 +149,15 @@ class AuthService {
         await this.storeProfiles(userProfiles);
       }
 
+      // Check if user has complete profile
+      const hasCompleteProfile = this.checkProfileComplete(userProfiles);
+
       return {
         user: authData.user,
         session: authData.session,
-        profiles: userProfiles
+        profiles: userProfiles,
+        hasCompleteProfile,
+        needsProfileSetup: !hasCompleteProfile
       };
     } catch (error) {
       console.error('Login error:', error);
@@ -264,10 +271,15 @@ class AuthService {
           await this.storeProfiles(userProfiles);
         }
 
+        // Check if user has complete profile
+        const hasCompleteProfile = this.checkProfileComplete(userProfiles);
+
         return {
           user: authData.user,
           session: authData.session,
-          profiles: userProfiles
+          profiles: userProfiles,
+          hasCompleteProfile,
+          needsProfileSetup: !hasCompleteProfile
         };
       }
 
@@ -380,27 +392,26 @@ class AuthService {
     }
   }
 
-  // Create profile after verification
-  async createProfile(supabaseUserId, firstName, lastName, role, avatarUrl = null) {
+  // Create profile after verification (role is no longer required - all users have both features)
+  async createProfile(supabaseUserId, firstName, lastName, avatarUrl = null) {
     try {
-      console.log('Creating profile with params:', { supabaseUserId, firstName, lastName, role, avatarUrl });
+      console.log('🔵 [createProfile] Starting profile creation...');
+      console.log('🔵 [createProfile] Params:', { supabaseUserId, firstName, lastName, avatarUrl });
       
       // Validate required fields
       if (!supabaseUserId) {
+        console.error('❌ [createProfile] Missing supabaseUserId');
         throw new Error('Missing supabaseUserId - user may not be properly authenticated');
       }
       if (!firstName || !lastName) {
+        console.error('❌ [createProfile] Missing name fields:', { firstName, lastName });
         throw new Error('First name and last name are required');
-      }
-      if (!role || !['user', 'host'].includes(role)) {
-        throw new Error('Invalid role - must be "user" or "host"');
       }
       
       const payload = {
         supabaseUserId,
         firstName,
-        lastName,
-        role
+        lastName
       };
       
       // Only include avatarUrl if provided, otherwise backend will generate Gravatar
@@ -408,22 +419,30 @@ class AuthService {
         payload.avatarUrl = avatarUrl;
       }
       
-      console.log('Sending profile creation request to:', `${this.baseURL}/profiles`);
+      console.log('🔵 [createProfile] Payload:', JSON.stringify(payload, null, 2));
+      console.log('🔵 [createProfile] Sending request to:', `${this.baseURL}/profiles`);
+      
       const response = await axios.post(`${this.baseURL}/profiles`, payload);
-      console.log('Profile created successfully:', response.data);
+      
+      console.log('✅ [createProfile] Profile created successfully');
+      console.log('✅ [createProfile] Response:', JSON.stringify(response.data, null, 2));
       
       // Sync profiles with storage after creating new profile
+      console.log('🔵 [createProfile] Fetching user profiles for sync...');
       const userProfiles = await this.getUserProfiles(supabaseUserId);
+      console.log('🔵 [createProfile] Fetched profiles:', userProfiles?.length || 0);
+      
       if (userProfiles && userProfiles.length > 0) {
         await this.storeProfiles(userProfiles);
-        console.log('Profiles synced to storage after creation');
+        console.log('✅ [createProfile] Profiles synced to storage');
       }
       
       return response.data;
     } catch (error) {
-      console.error('Profile creation error:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
+      console.error('❌ [createProfile] Profile creation error:', error.message);
+      console.error('❌ [createProfile] Error response data:', JSON.stringify(error.response?.data, null, 2));
+      console.error('❌ [createProfile] Error status:', error.response?.status);
+      console.error('❌ [createProfile] Full error:', error);
       throw new Error(error.response?.data?.message || error.message || 'Profile creation failed');
     }
   }
@@ -497,6 +516,39 @@ class AuthService {
       // Return empty array if no profiles found
       return [];
     }
+  }
+
+  /**
+   * Check if user has a complete profile (name set)
+   * Role is no longer required - all users have access to both features
+   * @param {Array} profiles - Array of user profiles
+   * @returns {boolean} True if at least one profile is complete
+   */
+  checkProfileComplete(profiles) {
+    if (!profiles || profiles.length === 0) {
+      return false;
+    }
+
+    // Check if at least one profile has first_name and last_name
+    return profiles.some(profile => 
+      profile.first_name && 
+      profile.last_name
+    );
+  }
+
+  /**
+   * Get the primary profile for navigation
+   * Since role is no longer used, just return the first profile
+   * @param {Array} profiles - Array of user profiles
+   * @returns {Object|null} Primary profile or null
+   */
+  getPrimaryProfile(profiles) {
+    if (!profiles || profiles.length === 0) {
+      return null;
+    }
+
+    // Return first profile (role is no longer used)
+    return profiles[0];
   }
 
   // ============================================

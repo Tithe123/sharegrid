@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
     View,
     Text,
@@ -8,25 +8,100 @@ import {
     Modal,
     Animated,
     TouchableWithoutFeedback,
+    FlatList,
+    ActivityIndicator,
+    Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import axios from "axios";
 
-export default function BankWithdrawalScreen() {
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3001/api";
+
+export default function BankWithdrawalScreen({ route }) {
     const navigation = useNavigation();
+    const { profileId } = route?.params || {};
+    
     const [showBalance, setShowBalance] = useState(true);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showFailedModal, setShowFailedModal] = useState(false);
+    const [showBankPicker, setShowBankPicker] = useState(false);
     
     const [accountNumber, setAccountNumber] = useState("");
     const [amount, setAmount] = useState("");
-    const [selectedBank, setSelectedBank] = useState("");
+    const [selectedBank, setSelectedBank] = useState(null);
+    const [banks, setBanks] = useState([]);
+    const [accountName, setAccountName] = useState("");
+    const [balance, setBalance] = useState("0.00");
+    const [loading, setLoading] = useState(false);
+    const [verifyingAccount, setVerifyingAccount] = useState(false);
+    const [loadingBanks, setLoadingBanks] = useState(false);
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const translateY = useRef(new Animated.Value(200)).current;
 
-    const balance = "5,334.90";
+    useEffect(() => {
+        loadBanks();
+        loadBalance();
+    }, []);
+
+    useEffect(() => {
+        if (accountNumber.length === 10 && selectedBank) {
+            resolveAccount();
+        } else {
+            setAccountName("");
+        }
+    }, [accountNumber, selectedBank]);
+
+    const loadBalance = async () => {
+        try {
+            const response = await axios.get(
+                `${API_URL}/wallet/fiat/${profileId}/balance`
+            );
+            if (response.data.success) {
+                const bal = parseFloat(response.data.data.balance || 0);
+                setBalance(bal.toLocaleString("en-NG", { minimumFractionDigits: 2 }));
+            }
+        } catch (error) {
+            console.error("Error loading balance:", error);
+        }
+    };
+
+    const loadBanks = async () => {
+        try {
+            setLoadingBanks(true);
+            const response = await axios.get(`${API_URL}/wallet/fiat/banks`);
+            if (response.data.success) {
+                setBanks(response.data.data);
+            }
+        } catch (error) {
+            console.error("Error loading banks:", error);
+        } finally {
+            setLoadingBanks(false);
+        }
+    };
+
+    const resolveAccount = async () => {
+        try {
+            setVerifyingAccount(true);
+            const response = await axios.post(
+                `${API_URL}/wallet/fiat/resolve-account`,
+                {
+                    accountNumber,
+                    bankCode: selectedBank.code
+                }
+            );
+            if (response.data.success) {
+                setAccountName(response.data.data.account_name);
+            }
+        } catch (error) {
+            console.error("Error resolving account:", error);
+            setAccountName("");
+        } finally {
+            setVerifyingAccount(false);
+        }
+    };
 
     
     const openModal = (setter) => {
@@ -62,9 +137,50 @@ export default function BankWithdrawalScreen() {
         ]).start(() => setter(false));
     };
 
-    const handleProceed = () => {
-    
-        openModal(setShowFailedModal);
+    const handleProceed = async () => {
+        if (!selectedBank || !accountNumber || !amount) {
+            Alert.alert("Error", "Please fill all fields");
+            return;
+        }
+
+        if (!accountName) {
+            Alert.alert("Error", "Please wait for account verification");
+            return;
+        }
+
+        const withdrawAmount = parseFloat(amount);
+        const currentBalance = parseFloat(balance.replace(/,/g, ""));
+
+        if (withdrawAmount < 1000) {
+            Alert.alert("Error", "Minimum withdrawal is ₦1,000");
+            return;
+        }
+
+        if (withdrawAmount > currentBalance) {
+            Alert.alert("Error", "Insufficient balance");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await axios.post(
+                `${API_URL}/wallet/fiat/${profileId}/withdraw`,
+                {
+                    amount: withdrawAmount,
+                    accountNumber,
+                    bankCode: selectedBank.code
+                }
+            );
+
+            if (response.data.success) {
+                openModal(setShowSuccessModal);
+            }
+        } catch (error) {
+            console.error("Withdrawal error:", error);
+            openModal(setShowFailedModal);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -121,17 +237,28 @@ export default function BankWithdrawalScreen() {
               
                 <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>Choose Bank</Text>
-                    <View style={styles.inputWithIcon}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Select your bank"
-                            placeholderTextColor="#64748b"
-                            value={selectedBank}
-                            onChangeText={setSelectedBank}
-                        />
+                    <TouchableOpacity 
+                        style={styles.inputWithIcon}
+                        onPress={() => setShowBankPicker(true)}
+                    >
+                        <Text style={[styles.input, !selectedBank && { color: "#64748b" }]}>
+                            {selectedBank ? selectedBank.name : "Select your bank"}
+                        </Text>
                         <Feather name="chevron-down" size={20} color="#64748b" />
-                    </View>
+                    </TouchableOpacity>
                 </View>
+
+                {accountName ? (
+                    <View style={styles.accountNameBox}>
+                        <Ionicons name="checkmark-circle" size={18} color="#16a34a" />
+                        <Text style={styles.accountNameText}>{accountName}</Text>
+                    </View>
+                ) : verifyingAccount ? (
+                    <View style={styles.accountNameBox}>
+                        <ActivityIndicator size="small" color="#0056D2" />
+                        <Text style={styles.accountNameText}>Verifying account...</Text>
+                    </View>
+                ) : null}
 
                 <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>Account Number</Text>
@@ -172,10 +299,57 @@ export default function BankWithdrawalScreen() {
             <View style={styles.spacer} />
 
         
-            <TouchableOpacity style={styles.proceedButton} onPress={handleProceed}>
-                <Feather name="shield" size={20} color="#fff" style={styles.shieldIcon} />
-                <Text style={styles.proceedButtonText}>PROCEED</Text>
+            <TouchableOpacity 
+                style={[styles.proceedButton, loading && styles.disabledButton]} 
+                onPress={handleProceed}
+                disabled={loading}
+            >
+                {loading ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                    <>
+                        <Feather name="shield" size={20} color="#fff" style={styles.shieldIcon} />
+                        <Text style={styles.proceedButtonText}>PROCEED</Text>
+                    </>
+                )}
             </TouchableOpacity>
+
+            {/* Bank Picker Modal */}
+            <Modal transparent visible={showBankPicker} animationType="slide">
+                <View style={styles.modalOverlay}>
+                    <View style={styles.bankPickerSheet}>
+                        <View style={styles.sheetTop}>
+                            <Text style={styles.sheetTitle}>Select Bank</Text>
+                            <TouchableOpacity onPress={() => setShowBankPicker(false)}>
+                                <Feather name="x" size={20} color="#111827" />
+                            </TouchableOpacity>
+                        </View>
+                        {loadingBanks ? (
+                            <ActivityIndicator size="large" color="#0056D2" style={{ marginTop: 20 }} />
+                        ) : (
+                            <FlatList
+                                data={banks}
+                                keyExtractor={(item) => item.code}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={styles.bankItem}
+                                        onPress={() => {
+                                            setSelectedBank(item);
+                                            setShowBankPicker(false);
+                                        }}
+                                    >
+                                        <Text style={styles.bankItemText}>{item.name}</Text>
+                                        {selectedBank?.code === item.code && (
+                                            <Ionicons name="checkmark" size={20} color="#0056D2" />
+                                        )}
+                                    </TouchableOpacity>
+                                )}
+                                style={{ maxHeight: 400 }}
+                            />
+                        )}
+                    </View>
+                </View>
+            </Modal>
 
             <Modal transparent visible={showSuccessModal} animationType="none">
                 <Animated.View style={[styles.modalOverlay, { opacity: fadeAnim }]}>
@@ -470,5 +644,41 @@ const styles = StyleSheet.create({
     sheetBtnOutlineText: { 
         color: "#111827", 
         fontWeight: "700" 
+    },
+    disabledButton: {
+        backgroundColor: "#999",
+    },
+    accountNameBox: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#dcfce7",
+        padding: 12,
+        borderRadius: 8,
+        gap: 8,
+        marginBottom: 10,
+    },
+    accountNameText: {
+        color: "#16a34a",
+        fontSize: 14,
+        fontWeight: "600",
+    },
+    bankPickerSheet: {
+        backgroundColor: "#fff",
+        borderTopLeftRadius: 18,
+        borderTopRightRadius: 18,
+        padding: 20,
+        maxHeight: "70%",
+    },
+    bankItem: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: "#f0f0f0",
+    },
+    bankItemText: {
+        fontSize: 16,
+        color: "#111827",
     },
 });

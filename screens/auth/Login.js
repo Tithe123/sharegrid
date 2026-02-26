@@ -60,25 +60,30 @@ export default function Login({ navigation }) {
         try {
             const result = await authService.login(formData.email, formData.password);
             
-            // Check if user has profiles
-            const hasProfiles = result.profiles && result.profiles.length > 0;
-            
             stopLoadingAnimation();
             setIsLoading(false);
             
-            if (hasProfiles) {
-                // User has profiles, check if onboarded
-                const isOnboarded = await authService.isOnboarded();
-                if (isOnboarded) {
-                    // Navigate to main app
-                    navigation.replace("HomeScreen");
+            // Check if user has complete profile (name and role set)
+            if (result.hasCompleteProfile) {
+                // User has complete profile, navigate to appropriate dashboard
+                const primaryProfile = authService.getPrimaryProfile(result.profiles);
+                
+                // Mark as onboarded since profile is complete
+                await authService.setOnboarded();
+                
+                // Navigate based on role
+                if (primaryProfile.role === 'host') {
+                    navigation.replace("HostHome");
                 } else {
-                    // Show role selection
-                    navigation.replace("Home");
+                    navigation.replace("HomeScreen");
                 }
             } else {
-                // New user, needs to select role
-                navigation.replace("Home");
+                // Profile incomplete or doesn't exist, go to role selection
+                navigation.replace("Home", {
+                    email: result.user.email,
+                    supabaseUserId: result.user.id,
+                    needsProfileCreation: true
+                });
             }
         } catch (error) {
             stopLoadingAnimation();
@@ -92,10 +97,32 @@ export default function Login({ navigation }) {
         startLoadingAnimation();
 
         try {
-            await authService.signInWithGoogle();
+            const result = await authService.signInWithGoogle();
             stopLoadingAnimation();
             setIsLoading(false);
-            navigation.replace("Home");
+            
+            // Check if user has complete profile (name and role set)
+            if (result.hasCompleteProfile) {
+                // User has complete profile, navigate to appropriate dashboard
+                const primaryProfile = authService.getPrimaryProfile(result.profiles);
+                
+                // Mark as onboarded since profile is complete
+                await authService.setOnboarded();
+                
+                // Navigate based on role
+                if (primaryProfile.role === 'host') {
+                    navigation.replace("HostHome");
+                } else {
+                    navigation.replace("HomeScreen");
+                }
+            } else {
+                // Profile incomplete or doesn't exist, go to role selection
+                navigation.replace("Home", {
+                    email: result.user.email,
+                    supabaseUserId: result.user.id,
+                    needsProfileCreation: true
+                });
+            }
         } catch (error) {
             stopLoadingAnimation();
             setIsLoading(false);

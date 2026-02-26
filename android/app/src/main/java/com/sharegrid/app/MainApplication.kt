@@ -1,4 +1,4 @@
-package com.triumphant.sharegrid
+package com.sharegrid.app
 
 import android.app.Application
 import android.content.res.Configuration

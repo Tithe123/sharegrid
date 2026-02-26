@@ -19,7 +19,6 @@ export default function RoleSelection({ navigation, route }) {
     const [userData, setUserData] = useState(null);
     const [isCreatingProfile, setIsCreatingProfile] = useState(false);
     const [step, setStep] = useState(1);
-    const [selectedRole, setSelectedRole] = useState(null);
     const [profileForm, setProfileForm] = useState({
         firstName: '',
         lastName: ''
@@ -51,55 +50,55 @@ export default function RoleSelection({ navigation, route }) {
     };
 
     const handleCreateProfile = async () => {
-        if (!selectedRole) return;
-        
         setIsCreatingProfile(true);
-        try {
+        try {        
             // Get current user data from multiple sources
             const currentUser = userData || await authService.getUserData();
             const userSupabaseId = supabaseUserId || currentUser?.supabaseUserId || currentUser?.id;
             let userFirstName = profileForm.firstName.trim() || firstName || currentUser?.firstName || '';
             let userLastName = profileForm.lastName.trim() || lastName || currentUser?.lastName || '';
 
-            console.log('Creating profile with:', {
-                userSupabaseId,
-                userFirstName,
-                userLastName,
-                selectedRole,
-                fromRouteParams: !!supabaseUserId,
-                fromUserData: !!currentUser?.supabaseUserId
-            });
-
             // Validate we have a supabaseUserId
             if (!userSupabaseId) {
+
                 throw new Error('Unable to identify user. Please try logging in again.');
+            }
+
+            // Validate names
+            if (!userFirstName || !userLastName) {
+                console.error('❌ [Home] Missing name fields:', { userFirstName, userLastName });
+                throw new Error('First name and last name are required');
             }
 
             // Update user metadata first if needed
             if ((!currentUser?.firstName || !currentUser?.lastName) && (userFirstName && userLastName)) {
+                console.log('🔵 [Home] Updating user metadata...');
                 await authService.updateUserProfile({ 
                     first_name: userFirstName, 
                     last_name: userLastName 
                 });
+                console.log('✅ [Home] User metadata updated');
             }
 
-            // Create profile
-            await authService.createProfile(
+            // Create profile (no role needed - all users have access to both features)
+            console.log('🔵 [Home] Calling authService.createProfile...');
+            const profileResult = await authService.createProfile(
                 userSupabaseId,
                 userFirstName,
-                userLastName,
-                selectedRole
+                userLastName
             );
+            console.log('✅ [Home] Profile created:', profileResult);
 
+            console.log('🔵 [Home] Setting onboarded status...');
             await authService.setOnboarded();
+            console.log('✅ [Home] Onboarded status set');
 
-            if (selectedRole === 'user') {
-                navigation.replace('HomeScreen');
-            } else {
-                navigation.replace('HostHome');
-            }
+            // Navigate to main home screen
+            console.log('🔵 [Home] Navigating to HomeScreen...');
+            navigation.replace('HomeScreen');
         } catch (error) {
-            console.error('Profile creation failed:', error);
+            console.error('❌ [Home] Profile creation failed:', error.message);
+            console.error('❌ [Home] Full error:', error);
             Alert.alert('Error', error.message);
             setIsCreatingProfile(false);
         }
@@ -180,75 +179,12 @@ export default function RoleSelection({ navigation, route }) {
                         styles.primaryButton, 
                         (!profileForm.firstName.trim() || !profileForm.lastName.trim()) && styles.disabledButton
                     ]}
-                    onPress={() => setStep(3)}
+                    onPress={handleCreateProfile}
                     disabled={!profileForm.firstName.trim() || !profileForm.lastName.trim()}
                 >
-                    <Text style={styles.primaryButtonText}>Next Step</Text>
-                    <Ionicons name="arrow-forward" size={20} color="#FFF" />
+                    <Text style={styles.primaryButtonText}>Create Profile</Text>
+                    <Ionicons name="checkmark" size={20} color="#FFF" />
                 </TouchableOpacity>
-            </View>
-        </View>
-    );
-
-    const renderRoleSelection = () => (
-        <View style={styles.fullScreenContainer}>
-            <TouchableOpacity onPress={() => setStep(2)} style={styles.topBackButton}>
-                <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-            </TouchableOpacity>
-
-            <View style={styles.centeredContent}>
-                <Text style={styles.stepTitle}>Select Role</Text>
-                <Text style={styles.stepDescription}>
-                    How would you like to use Sharegrid?
-                </Text>
-
-                <View style={styles.roleContainer}>
-                    <TouchableOpacity
-                        style={[
-                            styles.roleCard,
-                            selectedRole === 'user' && styles.selectedRoleCard
-                        ]}
-                        onPress={() => setSelectedRole('user')}
-                        activeOpacity={0.7}
-                    >
-                        <View style={[styles.iconContainer, { backgroundColor: '#E3F2FD' }]}>
-                            <Ionicons name="wifi" size={28} color="#2979FF" />
-                        </View>
-                        <View style={styles.roleTextContainer}>
-                            <Text style={styles.roleTitle}>Connect</Text>
-                            <Text style={styles.roleDescription}>Access high-speed internet hotspots nearby</Text>
-                        </View>
-                        {selectedRole === 'user' && <Ionicons name="checkmark-circle" size={24} color="#2979FF" />}
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[
-                            styles.roleCard,
-                            selectedRole === 'host' && styles.selectedRoleCard
-                        ]}
-                        onPress={() => setSelectedRole('host')}
-                        activeOpacity={0.7}
-                    >
-                        <View style={[styles.iconContainer, { backgroundColor: '#E8F5E9' }]}>
-                            <Ionicons name="globe-outline" size={28} color="#4CAF50" />
-                        </View>
-                        <View style={styles.roleTextContainer}>
-                            <Text style={styles.roleTitle}>Host Node</Text>
-                            <Text style={styles.roleDescription}>Share bandwidth and earn crypto rewards</Text>
-                        </View>
-                        {selectedRole === 'host' && <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />}
-                    </TouchableOpacity>
-                </View>
-
-                {selectedRole && (
-                    <TouchableOpacity 
-                        style={styles.primaryButton}
-                        onPress={handleCreateProfile}
-                    >
-                        <Text style={styles.primaryButtonText}>Create Profile</Text>
-                        <Ionicons name="checkmark" size={20} color="#FFF" />
-                    </TouchableOpacity>
-                )}
             </View>
         </View>
     );
@@ -258,7 +194,6 @@ export default function RoleSelection({ navigation, route }) {
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 {step === 1 && renderWelcome()}
                 {step === 2 && renderProfileInput()}
-                {step === 3 && renderRoleSelection()}
             </ScrollView>
         </SafeAreaView>
     );
@@ -364,51 +299,6 @@ const styles = StyleSheet.create({
         color: "#1A1A1A",
         borderWidth: 1,
         borderColor: "#E0E0E0",
-    },
-    roleContainer: {
-        gap: 16,
-        marginBottom: 32,
-    },
-    roleCard: {
-        backgroundColor: "#FFFFFF",
-        borderRadius: 16,
-        padding: 20,
-        flexDirection: "row",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.05)",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
-    },
-    selectedRoleCard: {
-        borderColor: "#2979FF",
-        backgroundColor: "#F0F7FF",
-        borderWidth: 2,
-    },
-    iconContainer: {
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 16,
-    },
-    roleTextContainer: {
-        flex: 1,
-    },
-    roleTitle: {
-        fontSize: 17,
-        fontWeight: "700",
-        color: "#1A1A1A",
-        marginBottom: 4,
-    },
-    roleDescription: {
-        fontSize: 14,
-        color: "#757575",
-        lineHeight: 20,
     },
     primaryButton: {
         backgroundColor: "#2979FF",
