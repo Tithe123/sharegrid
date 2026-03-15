@@ -41,7 +41,7 @@
     "react-native-get-random-values": "^2.0.0",
     "react-native-modal": "^14.0.0-rc.1",
     "react-native-passkey": "^3.3.2",
-    "react-native-paystack-webview": "^4.6.2",
+    "react-native-paystack-webview": "^5.0.2",
     "react-native-qrcode-styled": "^0.4.0",
     "react-native-qrcode-svg": "^6.3.2",
     "react-native-range-slider": "^0.1.2",

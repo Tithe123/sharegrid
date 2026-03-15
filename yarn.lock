@@ -1808,6 +1808,11 @@
   resolved "https://registry.npmjs.org/@types/stack-utils/-/stack-utils-2.0.3.tgz"
   integrity sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==
 
+"@types/validator@^13.6.3":
+  version "13.15.10"
+  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.15.10.tgz#742b77ec34d58554b94a76a14cef30d59e3c16b9"
+  integrity sha512-T8L6i7wCuyoK8A/ZeLYt1+q0ty3Zb9+qbSSvrIVitzT3YjZqkTZ40IbRsPanlB4h1QB3JVL1SYCdR6ngtFYcuA==
+
 "@types/ws@^8.18.1":
   version "8.18.1"
   resolved "https://registry.npmjs.org/@types/ws/-/ws-8.18.1.tgz"
@@ -4668,6 +4673,15 @@ react-native-passkey@^3.3.2:
   resolved "https://registry.npmjs.org/react-native-passkey/-/react-native-passkey-3.3.2.tgz"
   integrity sha512-YgXERrBlgVHAYkxGPpncB0zoiRQfZyMMMlWfNTYMyKvOS6muFMlhzk6w5lG4FyEEVrvXHGV4AS6twbmt2Rv8GA==
 
+react-native-paystack-webview@^5.0.2:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/react-native-paystack-webview/-/react-native-paystack-webview-5.0.3.tgz#ff547eedb47b8965dd2b151dc80fb6d08e0a846e"
+  integrity sha512-NkQX2YD0Jqir+VAEnpRbBi/HeqZSpCcUHOpB3OSA9Ez1PdJ7jhx7kkhl6dB0CPaqrPHUXjPG7aZoXoA7V7b81Q==
+  dependencies:
+    "@types/validator" "^13.6.3"
+    react-native-webview "*"
+    validator "^13.6.0"
+
 react-native-qrcode-styled@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/react-native-qrcode-styled/-/react-native-qrcode-styled-0.4.0.tgz#7391ecdaf77fd96db139a8b0b6e2c0f566c49f07"
@@ -4726,9 +4740,9 @@ react-native-verification-code-input@^1.0.7:
   resolved "https://registry.npmjs.org/react-native-verification-code-input/-/react-native-verification-code-input-1.0.7.tgz"
   integrity sha512-wN8ftpSfFAECI79oiSrZfDtdISOsX80Jv1xOB2nCxW4FUIGyzQNZ/IQu620106ChzAzjpHHelqluI3ecsE9RMQ==
 
-react-native-webview@^13.16.0:
+react-native-webview@*, react-native-webview@^13.16.0:
   version "13.16.0"
-  resolved "https://registry.npmjs.org/react-native-webview/-/react-native-webview-13.16.0.tgz"
+  resolved "https://registry.yarnpkg.com/react-native-webview/-/react-native-webview-13.16.0.tgz#c995148f944a7eaf12389f0e6d5c6f5e6a775686"
   integrity sha512-Nh13xKZWW35C0dbOskD7OX01nQQavOzHbCw9XoZmar4eXCo7AvrYJ0jlUfRVVIJzqINxHlpECYLdmAdFsl9xDA==
   dependencies:
     escape-string-regexp "^4.0.0"
@@ -5414,6 +5428,11 @@ validate-npm-package-name@^5.0.0:
   version "5.0.1"
   resolved "https://registry.npmjs.org/validate-npm-package-name/-/validate-npm-package-name-5.0.1.tgz"
   integrity sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==
+
+validator@^13.6.0:
+  version "13.15.26"
+  resolved "https://registry.yarnpkg.com/validator/-/validator-13.15.26.tgz#36c3deeab30e97806a658728a155c66fcaa5b944"
+  integrity sha512-spH26xU080ydGggxRyR1Yhcbgx+j3y5jbNXk/8L+iRvdIEQ4uTRH2Sgf2dokud6Q4oAtsbNvJ1Ft+9xmm6IZcA==
 
 vary@~1.1.2:
   version "1.1.2"
